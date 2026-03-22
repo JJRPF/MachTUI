@@ -1,10 +1,11 @@
-//! Counter Demo: MVU, Styling, and Human-TUI interaction.
+//! Counter Demo: Polished Async MVU, Styling, and Human-TUI interaction.
 
 use machtui::core::Renderer;
-use machtui::talon::{Model, Program};
+use machtui::talon::{Model, Program, Cmd};
 use machtui::oracle::SemanticNode;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use std::io;
+use std::time::Duration;
 
 #[derive(Debug)]
 struct App {
@@ -22,12 +23,13 @@ enum Msg {
 impl Model for App {
     type Message = Msg;
 
-    fn update(&mut self, msg: Self::Message) {
+    fn update(&mut self, msg: Self::Message) -> Option<Cmd<Self::Message>> {
         match msg {
             Msg::Inc => self.count += 1,
             Msg::Dec => self.count -= 1,
             Msg::Exit => self.running = false,
         }
+        None
     }
 
     fn view(&self) -> String {
@@ -40,22 +42,33 @@ impl Model for App {
     }
 }
 
-fn main() -> io::Result<()> {
+#[tokio::main]
+async fn main() -> io::Result<()> {
     let app = App { count: 0, running: true };
     let mut prog = Program::new(app);
     let mut renderer = Renderer::new()?;
 
-    renderer.run(|canvas, event| {
-        if let Some(Event::Key(KeyEvent { code, .. })) = event {
-            match code {
-                KeyCode::Char('+') => prog.dispatch(Msg::Inc),
-                KeyCode::Char('-') => prog.dispatch(Msg::Dec),
-                KeyCode::Char('q') | KeyCode::Esc => prog.dispatch(Msg::Exit),
-                _ => {}
+    while prog.model().running {
+        if let Some(event) = renderer.poll_event(Duration::from_millis(10))? {
+            if let Event::Key(KeyEvent { code, .. }) = event {
+                match code {
+                    KeyCode::Char('+') => prog.dispatch(Msg::Inc),
+                    KeyCode::Char('-') => prog.dispatch(Msg::Dec),
+                    KeyCode::Char('q') | KeyCode::Esc => prog.dispatch(Msg::Exit),
+                    _ => {}
+                }
             }
         }
 
+        prog.update().await;
+        
+        let canvas = renderer.canvas_mut();
+        canvas.clear();
         canvas.draw_text(2, 2, &prog.model().view(), None);
-        Ok(prog.model().running)
-    })
+        
+        renderer.render()?;
+    }
+
+    renderer.shutdown()?;
+    Ok(())
 }

@@ -4,7 +4,7 @@
 
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyEvent},
+    event::{self, Event},
     execute,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     style::{self, Color, ContentStyle},
@@ -72,6 +72,7 @@ pub struct Renderer {
     stdout: Stdout,
     current_canvas: Canvas,
     last_canvas: Canvas,
+    sync_output: bool,
 }
 
 impl Renderer {
@@ -84,6 +85,7 @@ impl Renderer {
             stdout,
             current_canvas: Canvas::new(width, height),
             last_canvas: Canvas::new(width, height),
+            sync_output: true,
         })
     }
 
@@ -93,8 +95,22 @@ impl Renderer {
         Ok(())
     }
 
+    fn begin_sync(&mut self) -> io::Result<()> {
+        if self.sync_output {
+            self.stdout.queue(style::Print("\x1b[?2026h"))?;
+        }
+        Ok(())
+    }
+
+    fn end_sync(&mut self) -> io::Result<()> {
+        if self.sync_output {
+            self.stdout.queue(style::Print("\x1b[?2026l"))?;
+        }
+        Ok(())
+    }
+
     pub fn render(&mut self) -> io::Result<()> {
-        // Simple diffing engine: only redraw changed cells
+        self.begin_sync()?;
         for y in 0..self.current_canvas.height {
             for x in 0..self.current_canvas.width {
                 let idx = (y as usize) * (self.current_canvas.width as usize) + (x as usize);
@@ -108,41 +124,23 @@ impl Renderer {
                 }
             }
         }
+        self.end_sync()?;
         self.stdout.flush()?;
-        // Update last canvas state
         self.last_canvas.cells.clone_from(&self.current_canvas.cells);
         Ok(())
     }
 
-    pub fn canvas_mut(&mut self) -> &mut Canvas {
-        &mut self.current_canvas
+    /// Optimized run loop that avoids complex async closure captures by separating event polling.
+    pub fn poll_event(&self, timeout: Duration) -> io::Result<Option<Event>> {
+        if event::poll(timeout)? {
+            Ok(Some(event::read()?))
+        } else {
+            Ok(None)
+        }
     }
 
-    pub fn run<F>(&mut self, mut update_fn: F) -> io::Result<()>
-    where
-        F: FnMut(&mut Canvas, Option<Event>) -> io::Result<bool>,
-    {
-        loop {
-            let mut event_received = None;
-            if event::poll(Duration::from_millis(16))? {
-                let ev = event::read()?;
-                if let Event::Key(KeyEvent { code, .. }) = ev {
-                    if code == KeyCode::Char('q') {
-                        break;
-                    }
-                }
-                event_received = Some(ev);
-            }
-
-            self.current_canvas.clear();
-            let should_continue = update_fn(&mut self.current_canvas, event_received)?;
-            self.render()?;
-
-            if !should_continue {
-                break;
-            }
-        }
-        Ok(())
+    pub fn canvas_mut(&mut self) -> &mut Canvas {
+        &mut self.current_canvas
     }
 }
 

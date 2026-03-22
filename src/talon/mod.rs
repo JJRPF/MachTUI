@@ -1,17 +1,21 @@
 //! The "Talon" State Engine
 //!
-//! Strict Model-View-Update (MVU) architecture.
+//! Strict Model-View-Update (MVU) architecture with Async Command support.
 
 use std::fmt::Debug;
 use crate::oracle::SemanticNode;
+use futures::future::BoxFuture;
+
+/// A Command represents an asynchronous side-effect that eventually produces a message.
+pub type Cmd<M> = BoxFuture<'static, Option<M>>;
 
 /// Represents the global state of the application.
 pub trait Model: Debug + Sized {
     /// The type of messages this model processes.
-    type Message: Debug;
+    type Message: Debug + Send + 'static;
 
-    /// Updates the model based on a message.
-    fn update(&mut self, msg: Self::Message);
+    /// Updates the model based on a message and optionally returns a side-effect Command.
+    fn update(&mut self, msg: Self::Message) -> Option<Cmd<Self::Message>>;
 
     /// Generates a "View" representation for the terminal.
     fn view(&self) -> String;
@@ -23,15 +27,40 @@ pub trait Model: Debug + Sized {
 /// A dispatcher that bridges the Renderer and the State Engine.
 pub struct Program<M: Model> {
     pub model: M,
+    msg_tx: tokio::sync::mpsc::UnboundedSender<M::Message>,
+    msg_rx: tokio::sync::mpsc::UnboundedReceiver<M::Message>,
 }
 
 impl<M: Model> Program<M> {
     pub fn new(initial_model: M) -> Self {
-        Self { model: initial_model }
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+        Self { 
+            model: initial_model,
+            msg_tx: tx,
+            msg_rx: rx,
+        }
     }
 
-    pub fn dispatch(&mut self, msg: M::Message) {
-        self.model.update(msg);
+    /// Dispatch a message directly.
+    pub fn dispatch(&self, msg: M::Message) {
+        let _ = self.msg_tx.send(msg);
+    }
+
+    /// Process pending messages and run commands.
+    pub async fn update(&mut self) -> bool {
+        let mut changed = false;
+        while let Ok(msg) = self.msg_rx.try_recv() {
+            if let Some(cmd) = self.model.update(msg) {
+                let tx = self.msg_tx.clone();
+                tokio::spawn(async move {
+                    if let Some(next_msg) = cmd.await {
+                        let _ = tx.send(next_msg);
+                    }
+                });
+            }
+            changed = true;
+        }
+        changed
     }
 
     pub fn model(&self) -> &M {
@@ -57,17 +86,16 @@ mod tests {
     #[derive(Debug)]
     enum CounterMsg {
         Increment,
-        Decrement,
     }
 
     impl Model for Counter {
         type Message = CounterMsg;
 
-        fn update(&mut self, msg: Self::Message) {
+        fn update(&mut self, msg: Self::Message) -> Option<Cmd<Self::Message>> {
             match msg {
                 CounterMsg::Increment => self.count += 1,
-                CounterMsg::Decrement => self.count -= 1,
             }
+            None
         }
 
         fn view(&self) -> String {
@@ -79,10 +107,11 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_counter_program() {
+    #[tokio::test]
+    async fn test_counter_program() {
         let mut prog = Program::new(Counter::default());
         prog.dispatch(CounterMsg::Increment);
+        prog.update().await;
         assert_eq!(prog.model().count, 1);
         let json = prog.oracle_json();
         assert!(json.contains("Count: 1"));

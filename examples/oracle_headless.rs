@@ -1,6 +1,6 @@
 //! Oracle Demo: Headless mode for AI consumption.
 
-use machtui::talon::{Model, Program};
+use machtui::talon::{Model, Program, Cmd};
 use machtui::oracle::SemanticNode;
 
 #[derive(Debug)]
@@ -14,7 +14,10 @@ enum Msg { Login }
 
 impl Model for MockUI {
     type Message = Msg;
-    fn update(&mut self, _msg: Self::Message) { self.is_admin = true; }
+    fn update(&mut self, _msg: Self::Message) -> Option<Cmd<Self::Message>> { 
+        self.is_admin = true; 
+        None
+    }
     fn view(&self) -> String { format!("Admin: {}", self.is_admin) }
     fn semantic_view(&self) -> SemanticNode {
         let mut root = SemanticNode::new("window");
@@ -24,7 +27,8 @@ impl Model for MockUI {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let ui = MockUI { is_admin: false, status: "Ready".to_string() };
     let mut prog = Program::new(ui);
 
@@ -34,6 +38,7 @@ fn main() {
 
     println!("\nSending 'Login' message to Program...");
     prog.dispatch(Msg::Login);
+    prog.update().await;
 
     println!("\nUpdated Oracle Tree:");
     println!("{}", prog.oracle_json());

@@ -1,11 +1,13 @@
 //! The "Plume" Stylist
 //!
 //! A CSS-like parser and layout engine for .mtss (MachTUI Style Sheets).
+//! Powered by Taffy for high-performance Flexbox/Grid layout.
 
 pub mod lexer;
 
 use std::collections::HashMap;
 use lexer::{Lexer, Token};
+use taffy::prelude::*;
 
 /// A MachTUI Style Sheet (MTSS) rule.
 #[derive(Debug, Clone, Default)]
@@ -18,22 +20,18 @@ pub struct StyleRule {
 #[derive(Debug, Clone)]
 pub struct LayoutNode {
     pub id: String,
-    pub width: u16,
-    pub height: u16,
-    pub x: u16,
-    pub y: u16,
+    pub style: Style,
     pub children: Vec<LayoutNode>,
+    pub layout: Layout,
 }
 
 impl LayoutNode {
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_string(),
-            width: 0,
-            height: 0,
-            x: 0,
-            y: 0,
+            style: Style::default(),
             children: Vec::new(),
+            layout: Layout::new(),
         }
     }
 }
@@ -41,11 +39,15 @@ impl LayoutNode {
 /// The main stylist engine that parses and applies MTSS.
 pub struct Stylist {
     pub rules: Vec<StyleRule>,
+    pub taffy: TaffyTree<()>,
 }
 
 impl Stylist {
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        Self { 
+            rules: Vec::new(),
+            taffy: TaffyTree::new(),
+        }
     }
 
     /// Parses MTSS input using a lexer and a simple state machine.
@@ -91,23 +93,37 @@ impl Stylist {
             .and_then(|r| r.properties.get(key))
     }
 
-    /// A simple layout solver that assigns dimensions based on styles.
-    /// This will eventually be a full Flexbox implementation.
-    pub fn compute_layout(&self, node: &mut LayoutNode, parent_width: u16, parent_height: u16) {
-        // Simple logic for now: use styles if available, otherwise fill parent.
-        let width_str = self.get_property(&node.id, "width");
-        let height_str = self.get_property(&node.id, "height");
+    /// Recursively builds a Taffy tree from our LayoutNode tree.
+    fn build_taffy_tree(&mut self, node: &LayoutNode) -> NodeId {
+        let mut taffy_children = Vec::new();
+        for child in &node.children {
+            taffy_children.push(self.build_taffy_tree(child));
+        }
+        self.taffy.new_with_children(node.style.clone(), &taffy_children).unwrap()
+    }
 
-        node.width = width_str.and_then(|s| s.parse::<u16>().ok()).unwrap_or(parent_width);
-        node.height = height_str.and_then(|s| s.parse::<u16>().ok()).unwrap_or(parent_height);
+    /// Computes the layout for a node tree given parent dimensions.
+    pub fn compute_layout(&mut self, root: &mut LayoutNode, width: f32, height: f32) {
+        self.taffy.clear();
+        let root_id = self.build_taffy_tree(root);
+        
+        self.taffy.compute_layout(
+            root_id,
+            Size {
+                width: AvailableSpace::Definite(width),
+                height: AvailableSpace::Definite(height),
+            },
+        ).unwrap();
 
-        // Simple vertical layout for children
-        let mut current_y = 0;
-        for child in &mut node.children {
-            child.x = node.x;
-            child.y = node.y + current_y;
-            self.compute_layout(child, node.width, node.height - current_y);
-            current_y += child.height;
+        self.apply_taffy_layout(root, root_id);
+    }
+
+    /// Recursively copies Taffy results back to our LayoutNode tree.
+    fn apply_taffy_layout(&self, node: &mut LayoutNode, taffy_id: NodeId) {
+        node.layout = *self.taffy.layout(taffy_id).unwrap();
+        let taffy_children = self.taffy.children(taffy_id).unwrap();
+        for (i, child) in node.children.iter_mut().enumerate() {
+            self.apply_taffy_layout(child, taffy_children[i]);
         }
     }
 }
@@ -126,14 +142,17 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_layout() {
+    fn test_taffy_layout() {
         let mut stylist = Stylist::new();
-        stylist.parse_mtss("container { width: 100; height: 50; }");
-        
         let mut root = LayoutNode::new("container");
-        stylist.compute_layout(&mut root, 200, 200);
+        root.style = Style {
+            size: Size { width: length(100.0), height: length(50.0) },
+            ..Default::default()
+        };
+        
+        stylist.compute_layout(&mut root, 200.0, 200.0);
 
-        assert_eq!(root.width, 100);
-        assert_eq!(root.height, 50);
+        assert_eq!(root.layout.size.width, 100.0);
+        assert_eq!(root.layout.size.height, 50.0);
     }
 }
