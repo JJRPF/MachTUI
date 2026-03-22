@@ -114,7 +114,69 @@ async fn main() -> io::Result<()> {
 
     match &cli.command {
         Commands::New { name } => {
-            println!("Creating new MachTUI project: {}...", name);
+            println!("🚀 Creating new MachTUI project: {}...", name);
+            let path = std::env::current_dir().unwrap().join(name);
+            if path.exists() {
+                println!("❌ Error: Directory '{}' already exists.", name);
+                return Ok(());
+            }
+
+            // 1. Cargo Init
+            let status = process::Command::new("cargo")
+                .arg("init")
+                .arg("--bin")
+                .arg(name)
+                .status()
+                .expect("Failed to initialize cargo project");
+
+            if !status.success() {
+                println!("❌ Error: Failed to initialize cargo project.");
+                return Ok(());
+            }
+
+            // 2. Add MachTUI Dependency
+            println!("📦 Adding MachTUI dependency...");
+            let mut cargo_toml = std::fs::read_to_string(path.join("Cargo.toml")).unwrap();
+            if !cargo_toml.contains("machtui") {
+                cargo_toml.push_str("\nmachtui = { git = \"https://github.com/JJRPF/MachTUI\" }\n");
+                cargo_toml.push_str("tokio = { version = \"1.50\", features = [\"full\"] }\n");
+                cargo_toml.push_str("crossterm = \"0.27\"\n");
+                std::fs::write(path.join("Cargo.toml"), cargo_toml).unwrap();
+            }
+
+            // 3. Create initial main.rs
+            println!("✍️ Generating high-end template...");
+            let template = r#"use machtui::core::Renderer;
+use std::io;
+use std::time::Duration;
+
+#[tokio::main]
+async fn main() -> io::Result<()> {
+    let mut renderer = Renderer::new()?;
+    println!("Welcome to your new MachTUI App!");
+    
+    loop {
+        if let Some(event) = renderer.poll_event(Duration::from_millis(16))? {
+            if let crossterm::event::Event::Key(crossterm::event::KeyEvent { code, .. }) = event {
+                if code == crossterm::event::KeyCode::Char('q') { break; }
+            }
+        }
+        
+        let canvas = renderer.canvas_mut();
+        canvas.clear();
+        canvas.draw_gradient_text(2, 1, "HELLO MACHTUI", (0, 255, 255), (255, 0, 255));
+        canvas.draw_text(2, 3, "Press 'q' to exit", None);
+        
+        renderer.render()?;
+    }
+    renderer.shutdown()?;
+    Ok(())
+}
+"#;
+            std::fs::write(path.join("src/main.rs"), template).unwrap();
+
+            println!("✅ Project '{}' created successfully!", name);
+            println!("👉 Run: cd {} && cargo run", name);
         }
         Commands::Run { example } => {
             if let Some(ex) = example {

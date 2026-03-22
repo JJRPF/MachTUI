@@ -14,6 +14,7 @@ pub mod db;
 pub mod shell;
 pub mod bridge;
 pub mod modals;
+pub mod events;
 
 use crossterm::{
     cursor,

@@ -4,20 +4,25 @@ MachTUI is a high-performance, next-generation TUI engine for Rust. Designed fro
 
 ## 🚀 Key Features
 
-- **Mach Core:** Immediate-mode rendering with a double-buffered diffing engine and **built-in FPS tracking**.
-- **Component System:** Reusable, modular UI widgets like `ProgressBar` and `BoxComponent`.
-- **Talon State:** Strict **Model-View-Update (MVU)** architecture with asynchronous `Cmd` support.
-- **Plume Stylist:** Advanced **MTSS (MachTUI Style Sheets)** with support for **ID (#)** and **Class (.)** selectors.
-- **Vision Layer:** **Sub-pixel Braille rendering**, **RGB Gradients**, and **ASCII Art** utilities.
-- **Oracle Protocol:** **AI-Semantic Tree** generation with rich metadata for seamless LLM interaction.
+- **Mach Core:** Immediate-mode rendering with a double-buffered diffing engine, **built-in FPS tracking**, and **Event Bubbling/Capture** system.
+- **Component System:** Reusable, modular UI widgets like `ProgressBar`, `BoxComponent`, `TextInput`, `Tabs`, and `Checklist`.
+- **Talon State:** Strict **Model-View-Update (MVU)** architecture with asynchronous `Cmd` support and **Virtual DOM (VDom)** diffing.
+- **Plume Stylist:** Advanced **MTSS (MachTUI Style Sheets)** with support for **ID (#)**, **Class (.)**, **Pseudo-classes (:hover)**, and **Variables (var())**.
+- **HTML Converter:** Built-in **HTML-to-MachTUI Converter** for seamless web-to-TUI transitions.
+- **Vision Layer:** **Sub-pixel Braille rendering**, **Truecolor Image support**, **Vector Graphics**, **RGB Gradients**, and **ASCII Art** utilities.
+- **Oracle Protocol:** **AI-Semantic Tree** generation with rich metadata and a built-in **JSON-RPC Server**.
+- **Mach CLI:** Powerful management tool with **intelligent pathing**, **project scaffolding**, **visual snapshot testing**, and **auto-configurator**.
 
 ## 📦 Installation
 
-Add this to your `Cargo.toml`:
+### Quick Install (Automated)
+```bash
+curl -sSL https://raw.githubusercontent.com/JJRPF/MachTUI/main/scripts/install.sh | bash
+```
 
-```toml
-[dependencies]
-machtui = { git = "https://github.com/JJRPF/MachTUI" }
+### Manual Installation
+```bash
+cargo install --path .
 ```
 
 ## 🛠️ Mach CLI
