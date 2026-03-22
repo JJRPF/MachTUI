@@ -43,8 +43,10 @@ struct SettingsModel {
     serve_locally: bool,
     serve_ssh: bool,
     port: u16,
+    examples: Vec<String>,
     cursor_idx: usize,
     running: bool,
+    selected_example: Option<String>,
 }
 
 #[derive(Debug)]
@@ -53,6 +55,7 @@ enum SettingsMsg {
     ToggleSSH,
     MoveUp,
     MoveDown,
+    LaunchExample(String),
     Exit,
 }
 
@@ -67,7 +70,11 @@ impl Model for SettingsModel {
                 if self.cursor_idx > 0 { self.cursor_idx -= 1; }
             }
             SettingsMsg::MoveDown => {
-                if self.cursor_idx < 1 { self.cursor_idx += 1; }
+                if self.cursor_idx < 2 + self.examples.len() - 1 { self.cursor_idx += 1; }
+            }
+            SettingsMsg::LaunchExample(name) => {
+                self.selected_example = Some(name);
+                self.running = false;
             }
             SettingsMsg::Exit => self.running = false,
         }
@@ -84,7 +91,13 @@ impl Model for SettingsModel {
         out.push_str(&format!("{}[{}] Serve to SSH\n", ssh_sel, if self.serve_ssh { "X" } else { " " }));
         out.push_str(&format!("\nDefault Port: {}\n", self.port));
         
-        out.push_str("\n(Arrows to move, Space to toggle, 'q' to save and exit)");
+        out.push_str("\n--- Launch Examples ---\n");
+        for (i, ex) in self.examples.iter().enumerate() {
+            let sel = if self.cursor_idx == 2 + i { "> " } else { "  " };
+            out.push_str(&format!("{}{}\n", sel, ex));
+        }
+
+        out.push_str("\n(Arrows to move, Space/Enter to toggle/launch, 'q' to save and exit)");
         out
     }
 
@@ -92,6 +105,11 @@ impl Model for SettingsModel {
         let mut root = SemanticNode::new("configurator");
         root.add_child(SemanticNode::new("setting").with_content(&format!("Serve Locally: {}", self.serve_locally)));
         root.add_child(SemanticNode::new("setting").with_content(&format!("Serve to SSH: {}", self.serve_ssh)));
+        let mut examples_node = SemanticNode::new("examples");
+        for ex in &self.examples {
+            examples_node.add_child(SemanticNode::new("example").with_content(ex));
+        }
+        root.add_child(examples_node);
         root
     }
 }
@@ -106,14 +124,10 @@ async fn main() -> io::Result<()> {
         }
         Commands::Run { example } => {
             if let Some(ex) = example {
-                println!("Running example: {}...", ex);
-                process::Command::new("cargo")
-                    .args(["run", "--example", ex])
-                    .status()
-                    .expect("Failed to run example");
+                run_example(&ex);
             } else {
                 println!("Running current project...");
-                process::Command::new("cargo")
+                process::Command::new("/Users/JJR/.cargo/bin/cargo")
                     .arg("run")
                     .status()
                     .expect("Failed to run project");
@@ -127,20 +141,36 @@ async fn main() -> io::Result<()> {
             }
         }
         Commands::Config => {
-            run_configurator().await?;
+            if let Some(ex) = run_configurator().await? {
+                run_example(&ex);
+            }
         }
     }
     Ok(())
 }
 
-async fn run_configurator() -> io::Result<()> {
+fn run_example(name: &str) {
+    println!("Running example: {}...", name);
+    process::Command::new("/Users/JJR/.cargo/bin/cargo")
+        .args(["run", "--example", name])
+        .status()
+        .expect("Failed to run example");
+}
+
+async fn run_configurator() -> io::Result<Option<String>> {
     let mut renderer = Renderer::new()?;
     let mut prog = Program::new(SettingsModel {
         serve_locally: true,
         serve_ssh: false,
         port: 8080,
+        examples: vec![
+            "counter".to_string(),
+            "vision_waves".to_string(),
+            "oracle_headless".to_string(),
+        ],
         cursor_idx: 0,
         running: true,
+        selected_example: None,
     });
 
     while prog.model().running {
@@ -150,10 +180,15 @@ async fn run_configurator() -> io::Result<()> {
                     KeyCode::Up => prog.dispatch(SettingsMsg::MoveUp),
                     KeyCode::Down => prog.dispatch(SettingsMsg::MoveDown),
                     KeyCode::Char(' ') | KeyCode::Enter => {
-                        if prog.model().cursor_idx == 0 {
+                        let idx = prog.model().cursor_idx;
+                        if idx == 0 {
                             prog.dispatch(SettingsMsg::ToggleLocally);
-                        } else {
+                        } else if idx == 1 {
                             prog.dispatch(SettingsMsg::ToggleSSH);
+                        } else {
+                            let ex_idx = idx - 2;
+                            let ex_name = prog.model().examples[ex_idx].clone();
+                            prog.dispatch(SettingsMsg::LaunchExample(ex_name));
                         }
                     }
                     KeyCode::Char('q') | KeyCode::Esc => prog.dispatch(SettingsMsg::Exit),
@@ -175,7 +210,10 @@ async fn run_configurator() -> io::Result<()> {
         renderer.render()?;
     }
 
+    let selected = prog.model().selected_example.clone();
     renderer.shutdown()?;
-    println!("Settings saved.");
-    Ok(())
+    if selected.is_none() {
+        println!("Settings saved.");
+    }
+    Ok(selected)
 }

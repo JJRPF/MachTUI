@@ -19,6 +19,22 @@ Add this to your `Cargo.toml`:
 machtui = { git = "https://github.com/JJRPF/MachTUI" }
 ```
 
+## 🛠️ Mach CLI
+
+MachTUI comes with a powerful CLI tool to manage your application lifecycle.
+
+### Installation
+If you have the source, install it globally:
+```bash
+cargo install --path .
+```
+
+### Usage
+- **`mach config`**: Launch the TUI configurator to manage local/SSH serving and explore examples.
+- **`mach new <name>`**: Scaffold a new MachTUI project.
+- **`mach run`**: Run your current project.
+- **`mach oracle`**: Inspect your UI's semantic tree or start a headless AI server.
+
 ## 🎮 Demos
 
 Explore the capabilities of MachTUI with our built-in examples:
