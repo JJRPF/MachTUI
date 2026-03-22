@@ -127,7 +127,7 @@ async fn main() -> io::Result<()> {
                 run_example(&ex);
             } else {
                 println!("Running current project...");
-                process::Command::new("/Users/JJR/.cargo/bin/cargo")
+                process::Command::new("cargo")
                     .arg("run")
                     .status()
                     .expect("Failed to run project");
@@ -151,7 +151,7 @@ async fn main() -> io::Result<()> {
 
 fn run_example(name: &str) {
     println!("Running example: {}...", name);
-    process::Command::new("/Users/JJR/.cargo/bin/cargo")
+    process::Command::new("cargo")
         .args(["run", "--example", name])
         .status()
         .expect("Failed to run example");
@@ -164,8 +164,10 @@ async fn run_configurator() -> io::Result<Option<String>> {
         serve_ssh: false,
         port: 8080,
         examples: vec![
+            "kitchen_sink".to_string(),
             "counter".to_string(),
             "vision_waves".to_string(),
+            "mvu_async".to_string(),
             "oracle_headless".to_string(),
         ],
         cursor_idx: 0,

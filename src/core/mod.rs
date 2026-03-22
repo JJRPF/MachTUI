@@ -1,13 +1,14 @@
 //! The "Mach" Core
 //!
 //! Immediate-mode renderer internally, exposed via a Reactive Component layer.
+//! Supports Mouse events, RGB Gradients, and Double-Buffered diffing.
 
 use crossterm::{
     cursor,
-    event::{self, Event},
+    event::{self, Event, EnableMouseCapture, DisableMouseCapture},
     execute,
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-    style::{self, Color, ContentStyle},
+    style::{self, Color, ContentStyle, Colors},
     QueueableCommand,
 };
 use std::io::{self, Stdout, Write};
@@ -61,6 +62,18 @@ impl Canvas {
         }
     }
 
+    /// Draws text with a horizontal RGB gradient.
+    pub fn draw_gradient_text(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8)) {
+        let len = text.chars().count();
+        for (i, c) in text.chars().enumerate() {
+            let t = i as f32 / (len.max(1) as f32);
+            let r = (start_rgb.0 as f32 * (1.0 - t) + end_rgb.0 as f32 * t) as u8;
+            let g = (start_rgb.1 as f32 * (1.0 - t) + end_rgb.1 as f32 * t) as u8;
+            let b = (start_rgb.2 as f32 * (1.0 - t) + end_rgb.2 as f32 * t) as u8;
+            self.set_cell(x + i as u16, y, c, Some(Color::Rgb { r, g, b }));
+        }
+    }
+
     pub fn clear(&mut self) {
         for cell in &mut self.cells {
             *cell = Cell::default();
@@ -80,7 +93,7 @@ impl Renderer {
         let (width, height) = terminal::size()?;
         let mut stdout = io::stdout();
         terminal::enable_raw_mode()?;
-        execute!(stdout, EnterAlternateScreen, cursor::Hide)?;
+        execute!(stdout, EnterAlternateScreen, cursor::Hide, EnableMouseCapture)?;
         Ok(Self {
             stdout,
             current_canvas: Canvas::new(width, height),
@@ -91,7 +104,7 @@ impl Renderer {
 
     pub fn shutdown(&mut self) -> io::Result<()> {
         terminal::disable_raw_mode()?;
-        execute!(self.stdout, LeaveAlternateScreen, cursor::Show)?;
+        execute!(self.stdout, LeaveAlternateScreen, cursor::Show, DisableMouseCapture)?;
         Ok(())
     }
 
@@ -117,9 +130,11 @@ impl Renderer {
                 if self.current_canvas.cells[idx] != self.last_canvas.cells[idx] {
                     let cell = &self.current_canvas.cells[idx];
                     self.stdout.queue(cursor::MoveTo(x, y))?;
-                    self.stdout.queue(style::SetForegroundColor(
-                        cell.style.foreground_color.unwrap_or(Color::Reset),
-                    ))?;
+                    
+                    let fg = cell.style.foreground_color.unwrap_or(Color::Reset);
+                    let bg = cell.style.background_color.unwrap_or(Color::Reset);
+                    self.stdout.queue(style::SetColors(Colors::new(fg, bg)))?;
+                    
                     self.stdout.queue(style::Print(cell.content))?;
                 }
             }
@@ -130,7 +145,6 @@ impl Renderer {
         Ok(())
     }
 
-    /// Optimized run loop that avoids complex async closure captures by separating event polling.
     pub fn poll_event(&self, timeout: Duration) -> io::Result<Option<Event>> {
         if event::poll(timeout)? {
             Ok(Some(event::read()?))
