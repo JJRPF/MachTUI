@@ -11,6 +11,8 @@ pub mod notifications;
 pub mod testing;
 pub mod http;
 pub mod db;
+pub mod shell;
+pub mod bridge;
 
 use crossterm::{
     cursor,
