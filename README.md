@@ -4,10 +4,10 @@ MachTUI is a high-performance, next-generation TUI engine for Rust. Designed fro
 
 ## 🚀 Key Features
 
-- **Mach Core:** Immediate-mode rendering with a double-buffered diffing engine, **built-in FPS tracking**, and **Event Bubbling/Capture** system.
+- **Mach Core:** Immediate-mode rendering with a double-buffered diffing engine, **built-in FPS tracking**, **Event Bubbling/Capture**, **Dynamic Plugin System**, and **Cloud Gateway** for remote streaming.
 - **Component System:** Reusable, modular UI widgets like `ProgressBar`, `BoxComponent`, `TextInput`, `Tabs`, and `Checklist`.
 - **Talon State:** Strict **Model-View-Update (MVU)** architecture with asynchronous `Cmd` support and **Virtual DOM (VDom)** diffing.
-- **Plume Stylist:** Advanced **MTSS (MachTUI Style Sheets)** with support for **ID (#)**, **Class (.)**, **Pseudo-classes (:hover)**, and **Variables (var())**.
+- **Plume Stylist:** Advanced **MTSS (MachTUI Style Sheets)** with support for **ID (#)**, **Class (.)**, **Pseudo-classes (:hover)**, **Variables (var())**, and **Live Inspector**.
 - **HTML Converter:** Built-in **HTML-to-MachTUI Converter** for seamless web-to-TUI transitions.
 - **Vision Layer:** **Sub-pixel Braille rendering**, **Truecolor Image support (Kitty & Sixel)**, **Vector Graphics**, **RGB Gradients**, and **ASCII Art** utilities.
 - **Oracle Protocol:** **AI-Semantic Tree** generation with rich metadata and a built-in **JSON-RPC Server**.

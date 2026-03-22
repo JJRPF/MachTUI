@@ -6,6 +6,7 @@
 pub mod lexer;
 pub mod layout;
 pub mod converter;
+pub mod inspector;
 
 use std::collections::HashMap;
 use lexer::{Lexer, Token};

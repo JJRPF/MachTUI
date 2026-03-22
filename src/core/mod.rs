@@ -15,6 +15,8 @@ pub mod shell;
 pub mod bridge;
 pub mod modals;
 pub mod events;
+pub mod plugins;
+pub mod cloud;
 
 use crossterm::{
     cursor,
