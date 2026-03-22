@@ -154,7 +154,14 @@ async fn main() -> io::Result<()> {
         }
         Commands::Test => {
             println!("Running MachTUI visual snapshot tests...");
-            // Implementation of snapshot testing logic
+            let root = get_project_root();
+            let snapshot_dir = root.join("snapshots");
+            if !snapshot_dir.exists() {
+                std::fs::create_dir(&snapshot_dir).expect("Failed to create snapshot dir");
+            }
+            println!("Snapshots directory: {:?}", snapshot_dir);
+            // In a real implementation, this would iterate over examples and compare outputs
+            println!("0 tests failed, 0 tests passed (Snapshot verification foundation ready)");
         }
     }
     Ok(())
@@ -176,6 +183,7 @@ async fn run_configurator() -> io::Result<Option<String>> {
         serve_ssh: false,
         port: 8080,
         examples: vec![
+            "tab_manager".to_string(),
             "personal_site".to_string(),
             "weather".to_string(),
             "system_dashboard".to_string(),

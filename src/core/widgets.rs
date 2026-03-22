@@ -110,3 +110,41 @@ impl OracleProvider for ListSelection {
         root
     }
 }
+
+/// Tab system for MachTUI.
+pub struct Tabs {
+    pub titles: Vec<String>,
+    pub selected_idx: usize,
+}
+
+impl Tabs {
+    pub fn new(titles: Vec<String>) -> Self {
+        Self { titles, selected_idx: 0 }
+    }
+
+    pub fn next(&mut self) {
+        self.selected_idx = (self.selected_idx + 1) % self.titles.len();
+    }
+
+    pub fn prev(&mut self) {
+        if self.selected_idx == 0 {
+            self.selected_idx = self.titles.len() - 1;
+        } else {
+            self.selected_idx -= 1;
+        }
+    }
+}
+
+impl Component for Tabs {
+    fn render(&self, canvas: &mut Canvas, x: u16, y: u16, _width: u16, _height: u16) {
+        let mut current_x = x;
+        for (i, title) in self.titles.iter().enumerate() {
+            let is_sel = i == self.selected_idx;
+            let color = if is_sel { Color::Cyan } else { Color::Grey };
+            let text = if is_sel { format!("[ {} ]", title) } else { format!("  {}  ", title) };
+            
+            canvas.draw_text(current_x, y, &text, Some(color));
+            current_x += text.len() as u16 + 1;
+        }
+    }
+}
