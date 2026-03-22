@@ -87,6 +87,7 @@ pub mod widgets;
 pub mod keys;
 pub mod notifications;
 pub mod testing;
+pub mod http;
 
 use std::time::Instant;
 
