@@ -5,6 +5,7 @@ edition = "2021"
 description = "A next-generation Terminal User Interface engine with AI agent accessibility."
 
 [dependencies]
+base64 = "0.22.1"
 clap = { version = "4.6.0", features = ["derive"] }
 crossterm = "0.27"
 futures = "0.3.32"
@@ -14,6 +15,7 @@ openssl = { version = "0.10.76", features = ["vendored"] }
 portable-pty = "0.9.0"
 rand = "0.10"
 reqwest = { version = "0.13.2", features = ["json"] }
+rgb = "0.8.53"
 rodio = "0.22.2"
 rusqlite = { version = "0.39.0", features = ["bundled"] }
 serde = { version = "1.0.228", features = ["derive"] }

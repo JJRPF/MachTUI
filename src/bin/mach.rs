@@ -245,6 +245,7 @@ async fn run_configurator() -> io::Result<Option<String>> {
         serve_ssh: false,
         port: 8080,
         examples: vec![
+            "mach_browser".to_string(),
             "installer_pro".to_string(),
             "remote_desktop".to_string(),
             "terminal_pro".to_string(),
