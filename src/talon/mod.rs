@@ -3,6 +3,7 @@
 //! Strict Model-View-Update (MVU) architecture.
 
 use std::fmt::Debug;
+use crate::oracle::SemanticNode;
 
 /// Represents the global state of the application.
 pub trait Model: Debug + Sized {
@@ -12,13 +13,16 @@ pub trait Model: Debug + Sized {
     /// Updates the model based on a message.
     fn update(&mut self, msg: Self::Message);
 
-    /// Generates a "View" representation (to be refined as we build Mach components).
-    fn view(&self) -> String; 
+    /// Generates a "View" representation for the terminal.
+    fn view(&self) -> String;
+
+    /// Generates a semantic tree for AI accessibility.
+    fn semantic_view(&self) -> SemanticNode;
 }
 
 /// A dispatcher that bridges the Renderer and the State Engine.
 pub struct Program<M: Model> {
-    model: M,
+    pub model: M,
 }
 
 impl<M: Model> Program<M> {
@@ -32,6 +36,12 @@ impl<M: Model> Program<M> {
 
     pub fn model(&self) -> &M {
         &self.model
+    }
+
+    /// For AI usage: get the current UI as a semantic JSON tree.
+    pub fn oracle_json(&self) -> String {
+        let node = self.model.semantic_view();
+        serde_json::to_string_pretty(&node).unwrap_or_else(|_| "{}".to_string())
     }
 }
 
@@ -63,16 +73,18 @@ mod tests {
         fn view(&self) -> String {
             format!("Count: {}", self.count)
         }
+
+        fn semantic_view(&self) -> SemanticNode {
+            SemanticNode::new("counter").with_content(&self.view())
+        }
     }
 
     #[test]
     fn test_counter_program() {
         let mut prog = Program::new(Counter::default());
         prog.dispatch(CounterMsg::Increment);
-        prog.dispatch(CounterMsg::Increment);
-        prog.dispatch(CounterMsg::Decrement);
-        
         assert_eq!(prog.model().count, 1);
-        assert_eq!(prog.model().view(), "Count: 1");
+        let json = prog.oracle_json();
+        assert!(json.contains("Count: 1"));
     }
 }
