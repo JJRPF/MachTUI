@@ -3,6 +3,7 @@
 
 use crate::core::Canvas;
 use crossterm::style::Color;
+use crate::oracle::{OracleProvider, SemanticNode};
 
 /// The base trait for all MachTUI components.
 pub trait Component {
@@ -29,7 +30,7 @@ impl ProgressBar {
 }
 
 impl Component for ProgressBar {
-    fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, height: u16) {
+    fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, _height: u16) {
         let filled_width = (width as f32 * self.progress) as u16;
         
         // Draw track
@@ -43,6 +44,14 @@ impl Component for ProgressBar {
         
         // Draw label
         canvas.draw_text(x, y + 1, &format!("{} ({:.0}%)", self.label, self.progress * 100.0), Some(Color::White));
+    }
+}
+
+impl OracleProvider for ProgressBar {
+    fn to_semantic(&self) -> SemanticNode {
+        SemanticNode::new("progress_bar")
+            .with_content(&self.label)
+            .with_metadata("progress", &format!("{:.2}", self.progress))
     }
 }
 
@@ -86,5 +95,12 @@ impl Component for BoxComponent {
             let title_str = format!(" {} ", self.title);
             canvas.draw_text(x + 2, y, &title_str, Some(Color::White));
         }
+    }
+}
+
+impl OracleProvider for BoxComponent {
+    fn to_semantic(&self) -> SemanticNode {
+        SemanticNode::new("box")
+            .with_content(&self.title)
     }
 }
