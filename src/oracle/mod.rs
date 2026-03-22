@@ -4,12 +4,19 @@
 
 use serde::{Serialize, Deserialize};
 
+use std::collections::HashMap;
+
 /// A node in the semantic UI tree.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SemanticNode {
     pub role: String,
     pub content: Option<String>,
+    pub metadata: HashMap<String, String>,
     pub children: Vec<SemanticNode>,
+}
+
+pub trait OracleProvider {
+    fn to_semantic(&self) -> SemanticNode;
 }
 
 impl SemanticNode {
@@ -17,12 +24,18 @@ impl SemanticNode {
         Self {
             role: role.to_string(),
             content: None,
+            metadata: HashMap::new(),
             children: Vec::new(),
         }
     }
 
     pub fn with_content(mut self, content: &str) -> Self {
         self.content = Some(content.to_string());
+        self
+    }
+
+    pub fn with_metadata(mut self, key: &str, value: &str) -> Self {
+        self.metadata.insert(key.to_string(), value.to_string());
         self
     }
 

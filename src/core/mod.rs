@@ -81,11 +81,20 @@ impl Canvas {
     }
 }
 
+pub mod components;
+pub mod animation;
+pub mod widgets;
+pub mod keys;
+
+use std::time::Instant;
+
 pub struct Renderer {
     stdout: Stdout,
     current_canvas: Canvas,
     last_canvas: Canvas,
     sync_output: bool,
+    last_frame_time: Instant,
+    pub show_fps: bool,
 }
 
 impl Renderer {
@@ -99,6 +108,8 @@ impl Renderer {
             current_canvas: Canvas::new(width, height),
             last_canvas: Canvas::new(width, height),
             sync_output: true,
+            last_frame_time: Instant::now(),
+            show_fps: true,
         })
     }
 
@@ -123,6 +134,15 @@ impl Renderer {
     }
 
     pub fn render(&mut self) -> io::Result<()> {
+        let now = Instant::now();
+        let fps = 1.0 / now.duration_since(self.last_frame_time).as_secs_f32();
+        self.last_frame_time = now;
+
+        if self.show_fps {
+            let fps_str = format!(" FPS: {:.1} ", fps);
+            self.current_canvas.draw_text(self.current_canvas.width - fps_str.len() as u16 - 1, 0, &fps_str, Some(Color::DarkGrey));
+        }
+
         self.begin_sync()?;
         for y in 0..self.current_canvas.height {
             for x in 0..self.current_canvas.width {

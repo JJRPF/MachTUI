@@ -12,27 +12,41 @@ use taffy::prelude::*;
 /// A MachTUI Style Sheet (MTSS) rule.
 #[derive(Debug, Clone, Default)]
 pub struct StyleRule {
-    pub selector: String,
+    pub selector: String, // e.g., "button", ".primary", "#header"
     pub properties: HashMap<String, String>,
 }
 
 /// A node in the layout tree.
 #[derive(Debug, Clone)]
 pub struct LayoutNode {
-    pub id: String,
+    pub id: Option<String>,
+    pub classes: Vec<String>,
+    pub tag: String,
     pub style: Style,
     pub children: Vec<LayoutNode>,
     pub layout: Layout,
 }
 
 impl LayoutNode {
-    pub fn new(id: &str) -> Self {
+    pub fn new(tag: &str) -> Self {
         Self {
-            id: id.to_string(),
+            id: None,
+            classes: Vec::new(),
+            tag: tag.to_string(),
             style: Style::default(),
             children: Vec::new(),
             layout: Layout::new(),
         }
+    }
+
+    pub fn with_id(mut self, id: &str) -> Self {
+        self.id = Some(id.to_string());
+        self
+    }
+
+    pub fn with_class(mut self, class: &str) -> Self {
+        self.classes.push(class.to_string());
+        self
     }
 }
 
@@ -50,50 +64,72 @@ impl Stylist {
         }
     }
 
-    /// Parses MTSS input using a lexer and a simple state machine.
     pub fn parse_mtss(&mut self, input: &str) {
         let mut lexer = Lexer::new(input);
         let tokens = lexer.tokens();
         let mut i = 0;
 
         while i < tokens.len() {
-            if let Token::Ident(selector) = &tokens[i] {
+            let mut selector = String::new();
+            
+            // Handle complex selectors like .class, #id, or tag
+            while i < tokens.len() && tokens[i] != Token::OpenBrace {
+                match &tokens[i] {
+                    Token::Ident(s) => selector.push_str(s),
+                    Token::Dot => selector.push('.'),
+                    Token::Hash => selector.push('#'),
+                    _ => {}
+                }
                 i += 1;
-                if i < tokens.len() && tokens[i] == Token::OpenBrace {
-                    i += 1;
-                    let mut properties = HashMap::new();
-                    while i < tokens.len() && tokens[i] != Token::CloseBrace {
-                        if let Token::Ident(key) = &tokens[i] {
+            }
+
+            if i < tokens.len() && tokens[i] == Token::OpenBrace {
+                i += 1;
+                let mut properties = HashMap::new();
+                while i < tokens.len() && tokens[i] != Token::CloseBrace {
+                    if let Token::Ident(key) = &tokens[i] {
+                        i += 1;
+                        if i < tokens.len() && tokens[i] == Token::Colon {
                             i += 1;
-                            if i < tokens.len() && tokens[i] == Token::Colon {
+                            if let Token::Ident(value) = &tokens[i] {
+                                properties.insert(key.clone(), value.clone());
                                 i += 1;
-                                if let Token::Ident(value) = &tokens[i] {
-                                    properties.insert(key.clone(), value.clone());
+                                if i < tokens.len() && tokens[i] == Token::Semicolon {
                                     i += 1;
-                                    if i < tokens.len() && tokens[i] == Token::Semicolon {
-                                        i += 1;
-                                    }
                                 }
                             }
-                        } else {
-                            i += 1;
                         }
+                    } else {
+                        i += 1;
                     }
-                    self.rules.push(StyleRule { selector: selector.clone(), properties });
                 }
+                self.rules.push(StyleRule { selector, properties });
             }
             i += 1;
         }
     }
 
-    /// Retrieve a property value for a given selector and key.
-    pub fn get_property(&self, selector: &str, key: &str) -> Option<&String> {
+    pub fn get_property(&self, node: &LayoutNode, key: &str) -> Option<&String> {
+        // Selector precedence: ID > Class > Tag
+        if let Some(id) = &node.id {
+            let id_sel = format!("#{}", id);
+            if let Some(prop) = self.rules.iter().find(|r| r.selector == id_sel).and_then(|r| r.properties.get(key)) {
+                return Some(prop);
+            }
+        }
+
+        for class in &node.classes {
+            let class_sel = format!(".{}", class);
+            if let Some(prop) = self.rules.iter().find(|r| r.selector == class_sel).and_then(|r| r.properties.get(key)) {
+                return Some(prop);
+            }
+        }
+
         self.rules.iter()
-            .find(|r| r.selector == selector)
+            .find(|r| r.selector == node.tag)
             .and_then(|r| r.properties.get(key))
     }
 
-    /// Recursively builds a Taffy tree from our LayoutNode tree.
     fn build_taffy_tree(&mut self, node: &LayoutNode) -> NodeId {
         let mut taffy_children = Vec::new();
         for child in &node.children {
@@ -102,7 +138,6 @@ impl Stylist {
         self.taffy.new_with_children(node.style.clone(), &taffy_children).unwrap()
     }
 
-    /// Computes the layout for a node tree given parent dimensions.
     pub fn compute_layout(&mut self, root: &mut LayoutNode, width: f32, height: f32) {
         self.taffy.clear();
         let root_id = self.build_taffy_tree(root);
@@ -118,7 +153,6 @@ impl Stylist {
         self.apply_taffy_layout(root, root_id);
     }
 
-    /// Recursively copies Taffy results back to our LayoutNode tree.
     fn apply_taffy_layout(&self, node: &mut LayoutNode, taffy_id: NodeId) {
         node.layout = *self.taffy.layout(taffy_id).unwrap();
         let taffy_children = self.taffy.children(taffy_id).unwrap();
@@ -133,18 +167,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_parse_advanced_selectors() {
+        let mut stylist = Stylist::new();
+        stylist.parse_mtss(".btn { color: red; } #hdr { color: blue; } div { color: green; }");
+        
+        let btn = LayoutNode::new("div").with_class("btn");
+        let hdr = LayoutNode::new("div").with_id("hdr");
+        let plain = LayoutNode::new("div");
+
+        assert_eq!(stylist.get_property(&btn, "color"), Some(&"red".to_string()));
+        assert_eq!(stylist.get_property(&hdr, "color"), Some(&"blue".to_string()));
+        assert_eq!(stylist.get_property(&plain, "color"), Some(&"green".to_string()));
+    }
+
+    #[test]
     fn test_parse_simple_mtss() {
         let mut stylist = Stylist::new();
         stylist.parse_mtss("button { color: red; background: blue; }");
         
         assert_eq!(stylist.rules.len(), 1);
-        assert_eq!(stylist.get_property("button", "color"), Some(&"red".to_string()));
+        let btn = LayoutNode::new("button");
+        assert_eq!(stylist.get_property(&btn, "color"), Some(&"red".to_string()));
     }
-
     #[test]
     fn test_taffy_layout() {
         let mut stylist = Stylist::new();
-        let mut root = LayoutNode::new("container");
+        let mut root = LayoutNode::new("div").with_id("container");
         root.style = Style {
             size: Size { width: length(100.0), height: length(50.0) },
             ..Default::default()

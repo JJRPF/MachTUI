@@ -3,6 +3,8 @@
 //! Provides advanced terminal graphics, including sub-pixel rendering using Braille characters.
 
 pub mod utils;
+pub mod images;
+pub mod sprites;
 
 /// A canvas for drawing sub-pixels (2x4 per terminal cell).
 pub struct SubPixelCanvas {
