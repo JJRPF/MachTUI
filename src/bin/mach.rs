@@ -3,8 +3,11 @@ use std::process;
 use machtui::core::Renderer;
 use machtui::talon::{Model, Program, Cmd};
 use machtui::oracle::SemanticNode;
+use machtui::vision::utils::get_ascii_art;
 use crossterm::event::{Event, KeyCode, KeyEvent};
+use crossterm::style::Color;
 use std::io;
+use std::path::PathBuf;
 use std::time::Duration;
 
 #[derive(Parser)]
@@ -82,41 +85,30 @@ impl Model for SettingsModel {
     }
 
     fn view(&self) -> String {
-        let mut out = String::from("--- MachTUI Configurator ---\n\n");
-        
-        let local_sel = if self.cursor_idx == 0 { "> " } else { "  " };
-        let ssh_sel = if self.cursor_idx == 1 { "> " } else { "  " };
-
-        out.push_str(&format!("{}[{}] Serve Locally\n", local_sel, if self.serve_locally { "X" } else { " " }));
-        out.push_str(&format!("{}[{}] Serve to SSH\n", ssh_sel, if self.serve_ssh { "X" } else { " " }));
-        out.push_str(&format!("\nDefault Port: {}\n", self.port));
-        
-        out.push_str("\n--- Launch Examples ---\n");
-        for (i, ex) in self.examples.iter().enumerate() {
-            let sel = if self.cursor_idx == 2 + i { "> " } else { "  " };
-            out.push_str(&format!("{}{}\n", sel, ex));
-        }
-
-        out.push_str("\n(Arrows to move, Space/Enter to toggle/launch, 'q' to save and exit)");
-        out
+        // View is handled manually in the render loop for high-end effects
+        String::new()
     }
 
     fn semantic_view(&self) -> SemanticNode {
-        let mut root = SemanticNode::new("configurator");
-        root.add_child(SemanticNode::new("setting").with_content(&format!("Serve Locally: {}", self.serve_locally)));
-        root.add_child(SemanticNode::new("setting").with_content(&format!("Serve to SSH: {}", self.serve_ssh)));
-        let mut examples_node = SemanticNode::new("examples");
-        for ex in &self.examples {
-            examples_node.add_child(SemanticNode::new("example").with_content(ex));
-        }
-        root.add_child(examples_node);
-        root
+        SemanticNode::new("configurator")
+    }
+}
+
+/// Finds the MachTUI root directory (either ~/MachTUI or fallback to current)
+fn get_project_root() -> PathBuf {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    let home_path = PathBuf::from(home).join("MachTUI");
+    if home_path.exists() {
+        home_path
+    } else {
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
     }
 }
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let cli = Cli::parse();
+    let root = get_project_root();
 
     match &cli.command {
         Commands::New { name } => {
@@ -124,10 +116,11 @@ async fn main() -> io::Result<()> {
         }
         Commands::Run { example } => {
             if let Some(ex) = example {
-                run_example(&ex);
+                run_example(&root, &ex);
             } else {
                 println!("Running current project...");
                 process::Command::new("cargo")
+                    .current_dir(&root)
                     .arg("run")
                     .status()
                     .expect("Failed to run project");
@@ -142,16 +135,17 @@ async fn main() -> io::Result<()> {
         }
         Commands::Config => {
             if let Some(ex) = run_configurator().await? {
-                run_example(&ex);
+                run_example(&root, &ex);
             }
         }
     }
     Ok(())
 }
 
-fn run_example(name: &str) {
+fn run_example(root: &std::path::Path, name: &str) {
     println!("Running example: {}...", name);
     process::Command::new("cargo")
+        .current_dir(root)
         .args(["run", "--example", name])
         .status()
         .expect("Failed to run example");
@@ -174,6 +168,8 @@ async fn run_configurator() -> io::Result<Option<String>> {
         running: true,
         selected_example: None,
     });
+
+    let header_art = get_ascii_art("MACH");
 
     while prog.model().running {
         if let Some(event) = renderer.poll_event(Duration::from_millis(10))? {
@@ -204,18 +200,37 @@ async fn run_configurator() -> io::Result<Option<String>> {
         let canvas = renderer.canvas_mut();
         canvas.clear();
         
-        let view = prog.model().view();
-        for (i, line) in view.lines().enumerate() {
-            canvas.draw_text(2, 2 + i as u16, line, None);
+        // --- PRETTY HEADER ---
+        for (i, line) in header_art.iter().enumerate() {
+            canvas.draw_gradient_text(4, 1 + i as u16, line, (255, 100, 0), (255, 255, 0));
         }
+        canvas.draw_text(4, 7, "SYSTEM CONFIGURATOR v0.5", Some(Color::Grey));
+
+        // --- SETTINGS ---
+        canvas.draw_text(4, 9, "⚙ SETTINGS", Some(Color::Cyan));
+        
+        let local_sel = if prog.model().cursor_idx == 0 { "> " } else { "  " };
+        let local_color = if prog.model().cursor_idx == 0 { Color::White } else { Color::Grey };
+        canvas.draw_text(4, 10, &format!("{}[{}] Serve Locally", local_sel, if prog.model().serve_locally { "X" } else { " " }), Some(local_color));
+
+        let ssh_sel = if prog.model().cursor_idx == 1 { "> " } else { "  " };
+        let ssh_color = if prog.model().cursor_idx == 1 { Color::White } else { Color::Grey };
+        canvas.draw_text(4, 11, &format!("{}[{}] Serve to SSH", ssh_sel, if prog.model().serve_ssh { "X" } else { " " }), Some(ssh_color));
+
+        // --- EXAMPLES ---
+        canvas.draw_text(4, 13, "🚀 LAUNCH EXAMPLES", Some(Color::Magenta));
+        for (i, ex) in prog.model().examples.iter().enumerate() {
+            let sel = if prog.model().cursor_idx == 2 + i { "> " } else { "  " };
+            let color = if prog.model().cursor_idx == 2 + i { Color::Green } else { Color::Grey };
+            canvas.draw_text(4, 14 + i as u16, &format!("{}{}", sel, ex), Some(color));
+        }
+
+        canvas.draw_text(4, 21, "Arrows: Move | Space: Toggle | Enter: Launch | Q: Exit", Some(Color::DarkGrey));
 
         renderer.render()?;
     }
 
     let selected = prog.model().selected_example.clone();
     renderer.shutdown()?;
-    if selected.is_none() {
-        println!("Settings saved.");
-    }
     Ok(selected)
 }
