@@ -8,6 +8,7 @@ pub mod sprites;
 pub mod colors;
 pub mod sound;
 pub mod charts;
+pub mod icons;
 
 /// A canvas for drawing sub-pixels (2x4 per terminal cell).
 pub struct SubPixelCanvas {
