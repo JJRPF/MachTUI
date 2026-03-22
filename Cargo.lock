@@ -1548,7 +1548,7 @@ dependencies = [
 
 [[package]]
 name = "machtui"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "base64",
  "clap",

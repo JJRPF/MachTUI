@@ -1,6 +1,6 @@
 [package]
 name = "machtui"
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 description = "A next-generation Terminal User Interface engine with AI agent accessibility."
 

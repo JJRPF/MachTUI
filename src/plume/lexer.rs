@@ -5,6 +5,8 @@ pub enum Token {
     Ident(String),
     OpenBrace,
     CloseBrace,
+    OpenParen,
+    CloseParen,
     Colon,
     Semicolon,
     Dot,
@@ -32,6 +34,8 @@ impl<'a> Lexer<'a> {
         let token = match c {
             '{' => Token::OpenBrace,
             '}' => Token::CloseBrace,
+            '(' => Token::OpenParen,
+            ')' => Token::CloseParen,
             ':' => Token::Colon,
             ';' => Token::Semicolon,
             '.' => Token::Dot,

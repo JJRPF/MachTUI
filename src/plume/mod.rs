@@ -111,6 +111,8 @@ impl Stylist {
                             while i < tokens.len() && tokens[i] != Token::Semicolon && tokens[i] != Token::CloseBrace {
                                 match &tokens[i] {
                                     Token::Ident(s) => value.push_str(s),
+                                    Token::OpenParen => value.push('('),
+                                    Token::CloseParen => value.push(')'),
                                     _ => {}
                                 }
                                 i += 1;

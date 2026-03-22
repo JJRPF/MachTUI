@@ -114,6 +114,22 @@ impl Canvas {
     }
 }
 
+pub struct HeadlessRenderer {
+    pub canvas: Canvas,
+}
+
+impl HeadlessRenderer {
+    pub fn new(width: u16, height: u16) -> Self {
+        Self {
+            canvas: Canvas::new(width, height),
+        }
+    }
+
+    pub fn render_frame(&self) -> crate::core::cloud::CanvasFrame {
+        crate::core::cloud::RemoteGateway::serialize_frame(&self.canvas)
+    }
+}
+
 pub struct Renderer {
     stdout: Stdout,
     current_canvas: Canvas,

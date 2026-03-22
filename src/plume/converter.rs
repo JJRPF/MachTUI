@@ -2,6 +2,7 @@
 //! Maps standard HTML tags and inline styles to LayoutNode and MTSS.
 
 use crate::plume::LayoutNode;
+use taffy::prelude::*;
 
 pub struct HtmlConverter;
 
@@ -41,6 +42,20 @@ impl HtmlConverter {
                     }
                 }
 
+                // Map inline styles (very basic for now)
+                if let Some(styles) = tag.attributes().get("style").flatten() {
+                    let style_str = styles.as_utf8_str();
+                    for part in style_str.split(';') {
+                        let kv: Vec<&str> = part.split(':').collect();
+                        if kv.len() == 2 {
+                            let key = kv[0].trim();
+                            let val = kv[1].trim();
+                            // In a real impl, we'd store these in the node's style
+                            // For now, we'll rely on the Stylist to handle MTSS.
+                        }
+                    }
+                }
+
                 // Recursively convert children using their handles
                 for child_handle in tag.children().top().iter() {
                     if let Some(child_node) = child_handle.get(dom.parser()) {
@@ -57,7 +72,6 @@ impl HtmlConverter {
                 if text.is_empty() {
                     Err("Empty text".into())
                 } else {
-                    // Use a special 'text' tag for raw content
                     Ok(LayoutNode::new("text").with_id(&text))
                 }
             }
