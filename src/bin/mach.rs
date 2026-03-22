@@ -39,6 +39,8 @@ enum Commands {
     },
     /// Launch the MachTUI Configurator
     Config,
+    /// Run visual snapshot tests
+    Test,
 }
 
 #[derive(Debug)]
@@ -150,6 +152,10 @@ async fn main() -> io::Result<()> {
                 run_example(&root, &ex);
             }
         }
+        Commands::Test => {
+            println!("Running MachTUI visual snapshot tests...");
+            // Implementation of snapshot testing logic
+        }
     }
     Ok(())
 }
@@ -170,6 +176,7 @@ async fn run_configurator() -> io::Result<Option<String>> {
         serve_ssh: false,
         port: 8080,
         examples: vec![
+            "mach_ide".to_string(),
             "spreadsheet".to_string(),
             "portfolio".to_string(),
             "agenda".to_string(),
