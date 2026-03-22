@@ -12,6 +12,7 @@ pub mod icons;
 pub mod vector;
 pub mod animations;
 pub mod sixel;
+pub mod themes;
 
 /// A canvas for drawing sub-pixels (2x4 per terminal cell).
 pub struct SubPixelCanvas {
