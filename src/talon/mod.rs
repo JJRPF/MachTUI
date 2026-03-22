@@ -3,6 +3,7 @@
 //! Strict Model-View-Update (MVU) architecture with Async Command support.
 
 pub mod vdom;
+pub mod sync;
 
 use std::fmt::Debug;
 use crate::oracle::SemanticNode;
