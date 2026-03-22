@@ -158,6 +158,7 @@ async fn run_configurator() -> io::Result<Option<String>> {
         serve_ssh: false,
         port: 8080,
         examples: vec![
+            "chat".to_string(),
             "game".to_string(),
             "explorer".to_string(),
             "dashboard".to_string(),

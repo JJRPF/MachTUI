@@ -4,9 +4,11 @@
 //! Powered by Taffy for high-performance Flexbox/Grid layout.
 
 pub mod lexer;
+pub mod layout;
 
 use std::collections::HashMap;
 use lexer::{Lexer, Token};
+use layout::*;
 use taffy::prelude::*;
 
 /// A MachTUI Style Sheet (MTSS) rule.
@@ -131,11 +133,24 @@ impl Stylist {
     }
 
     fn build_taffy_tree(&mut self, node: &LayoutNode) -> NodeId {
+        let mut style = node.style.clone();
+        
+        // Apply MTSS properties to Taffy style
+        if let Some(jc) = self.get_property(node, "justify-content") {
+            style.justify_content = Some(map_justify_content(jc));
+        }
+        if let Some(ai) = self.get_property(node, "align-items") {
+            style.align_items = Some(map_align_items(ai));
+        }
+        if let Some(fd) = self.get_property(node, "flex-direction") {
+            style.flex_direction = map_flex_direction(fd);
+        }
+
         let mut taffy_children = Vec::new();
         for child in &node.children {
             taffy_children.push(self.build_taffy_tree(child));
         }
-        self.taffy.new_with_children(node.style.clone(), &taffy_children).unwrap()
+        self.taffy.new_with_children(style, &taffy_children).unwrap()
     }
 
     pub fn compute_layout(&mut self, root: &mut LayoutNode, width: f32, height: f32) {
