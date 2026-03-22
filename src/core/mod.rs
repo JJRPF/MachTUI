@@ -1,7 +1,15 @@
 //! The "Mach" Core
 //!
 //! Immediate-mode renderer internally, exposed via a Reactive Component layer.
-//! Supports Mouse events, RGB Gradients, and Double-Buffered diffing.
+//! Supports Mouse events, RGB Gradients, Double-Buffered diffing, and Z-Index Layering.
+
+pub mod components;
+pub mod animation;
+pub mod widgets;
+pub mod keys;
+pub mod notifications;
+pub mod testing;
+pub mod http;
 
 use crossterm::{
     cursor,
@@ -12,13 +20,14 @@ use crossterm::{
     QueueableCommand,
 };
 use std::io::{self, Stdout, Write};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 /// A single cell in the terminal grid.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cell {
     pub content: char,
     pub style: ContentStyle,
+    pub z_index: i32,
 }
 
 impl Default for Cell {
@@ -26,6 +35,7 @@ impl Default for Cell {
         Self {
             content: ' ',
             style: ContentStyle::default(),
+            z_index: 0,
         }
     }
 }
@@ -46,32 +56,47 @@ impl Canvas {
         }
     }
 
-    pub fn set_cell(&mut self, x: u16, y: u16, content: char, color: Option<Color>) {
+    /// Sets a cell only if the provided z_index is >= current cell's z_index.
+    pub fn set_cell_z(&mut self, x: u16, y: u16, content: char, color: Option<Color>, z: i32) {
         if x < self.width && y < self.height {
             let idx = (y as usize) * (self.width as usize) + (x as usize);
-            self.cells[idx].content = content;
-            if let Some(c) = color {
-                self.cells[idx].style.foreground_color = Some(c);
+            if z >= self.cells[idx].z_index {
+                self.cells[idx].content = content;
+                self.cells[idx].z_index = z;
+                if let Some(c) = color {
+                    self.cells[idx].style.foreground_color = Some(c);
+                }
             }
         }
     }
 
-    pub fn draw_text(&mut self, x: u16, y: u16, text: &str, color: Option<Color>) {
+    pub fn set_cell(&mut self, x: u16, y: u16, content: char, color: Option<Color>) {
+        self.set_cell_z(x, y, content, color, 0);
+    }
+
+    pub fn draw_text_z(&mut self, x: u16, y: u16, text: &str, color: Option<Color>, z: i32) {
         for (i, c) in text.chars().enumerate() {
-            self.set_cell(x + i as u16, y, c, color);
+            self.set_cell_z(x + i as u16, y, c, color, z);
         }
     }
 
-    /// Draws text with a horizontal RGB gradient.
-    pub fn draw_gradient_text(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8)) {
+    pub fn draw_text(&mut self, x: u16, y: u16, text: &str, color: Option<Color>) {
+        self.draw_text_z(x, y, text, color, 0);
+    }
+
+    pub fn draw_gradient_text_z(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8), z: i32) {
         let len = text.chars().count();
         for (i, c) in text.chars().enumerate() {
             let t = i as f32 / (len.max(1) as f32);
             let r = (start_rgb.0 as f32 * (1.0 - t) + end_rgb.0 as f32 * t) as u8;
             let g = (start_rgb.1 as f32 * (1.0 - t) + end_rgb.1 as f32 * t) as u8;
             let b = (start_rgb.2 as f32 * (1.0 - t) + end_rgb.2 as f32 * t) as u8;
-            self.set_cell(x + i as u16, y, c, Some(Color::Rgb { r, g, b }));
+            self.set_cell_z(x + i as u16, y, c, Some(Color::Rgb { r, g, b }), z);
         }
+    }
+
+    pub fn draw_gradient_text(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8)) {
+        self.draw_gradient_text_z(x, y, text, start_rgb, end_rgb, 0);
     }
 
     pub fn clear(&mut self) {
@@ -80,16 +105,6 @@ impl Canvas {
         }
     }
 }
-
-pub mod components;
-pub mod animation;
-pub mod widgets;
-pub mod keys;
-pub mod notifications;
-pub mod testing;
-pub mod http;
-
-use std::time::Instant;
 
 pub struct Renderer {
     stdout: Stdout,
@@ -143,7 +158,7 @@ impl Renderer {
 
         if self.show_fps {
             let fps_str = format!(" FPS: {:.1} ", fps);
-            self.current_canvas.draw_text(self.current_canvas.width - fps_str.len() as u16 - 1, 0, &fps_str, Some(Color::DarkGrey));
+            self.current_canvas.draw_text_z(self.current_canvas.width - fps_str.len() as u16 - 1, 0, &fps_str, Some(Color::DarkGrey), 100);
         }
 
         self.begin_sync()?;
