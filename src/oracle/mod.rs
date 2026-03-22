@@ -4,6 +4,8 @@
 
 use serde::{Serialize, Deserialize};
 
+pub mod server;
+
 use std::collections::HashMap;
 
 /// A node in the semantic UI tree.

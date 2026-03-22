@@ -128,7 +128,19 @@ async fn main() -> io::Result<()> {
         }
         Commands::Oracle { server } => {
             if *server {
-                println!("Starting MachTUI Oracle JSON-RPC server...");
+                println!("Starting MachTUI Oracle JSON-RPC server on port 9090...");
+                
+                #[derive(Debug)]
+                struct MockApp;
+                impl Model for MockApp {
+                    type Message = ();
+                    fn update(&mut self, _: ()) -> Option<Cmd<()>> { None }
+                    fn view(&self) -> String { "Headless MachTUI".into() }
+                    fn semantic_view(&self) -> SemanticNode { SemanticNode::new("headless_root") }
+                }
+
+                let prog = Program::new(MockApp);
+                machtui::oracle::server::start_ai_server(&prog, 9090).await.expect("Server failed");
             } else {
                 println!("MachTUI Oracle: Inspection Mode");
             }
