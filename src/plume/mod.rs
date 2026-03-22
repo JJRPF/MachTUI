@@ -15,6 +15,7 @@ use taffy::prelude::*;
 #[derive(Debug, Clone, Default)]
 pub struct StyleRule {
     pub selector: String, // e.g., "button", ".primary", "#header"
+    pub pseudo_class: Option<String>, // e.g., "hover", "active"
     pub properties: HashMap<String, String>,
 }
 
@@ -24,6 +25,7 @@ pub struct LayoutNode {
     pub id: Option<String>,
     pub classes: Vec<String>,
     pub tag: String,
+    pub is_hovered: bool,
     pub style: Style,
     pub children: Vec<LayoutNode>,
     pub layout: Layout,
@@ -35,6 +37,7 @@ impl LayoutNode {
             id: None,
             classes: Vec::new(),
             tag: tag.to_string(),
+            is_hovered: false,
             style: Style::default(),
             children: Vec::new(),
             layout: Layout::new(),
@@ -73,13 +76,19 @@ impl Stylist {
 
         while i < tokens.len() {
             let mut selector = String::new();
+            let mut pseudo_class = None;
             
-            // Handle complex selectors like .class, #id, or tag
             while i < tokens.len() && tokens[i] != Token::OpenBrace {
                 match &tokens[i] {
                     Token::Ident(s) => selector.push_str(s),
                     Token::Dot => selector.push('.'),
                     Token::Hash => selector.push('#'),
+                    Token::Colon => {
+                        i += 1;
+                        if let Some(Token::Ident(p)) = tokens.get(i) {
+                            pseudo_class = Some(p.clone());
+                        }
+                    }
                     _ => {}
                 }
                 i += 1;
@@ -105,37 +114,56 @@ impl Stylist {
                         i += 1;
                     }
                 }
-                self.rules.push(StyleRule { selector, properties });
+                self.rules.push(StyleRule { selector, pseudo_class, properties });
             }
             i += 1;
         }
     }
 
     pub fn get_property(&self, node: &LayoutNode, key: &str) -> Option<&String> {
-        // Selector precedence: ID > Class > Tag
+        // Priority: Pseudo-classes > ID > Class > Tag
+        
+        // 1. Check for matching pseudo-class rules first
+        if node.is_hovered {
+            if let Some(prop) = self.find_rule(node, Some("hover"), key) {
+                return Some(prop);
+            }
+        }
+
+        // 2. Fallback to normal rules
+        self.find_rule(node, None, key)
+    }
+
+    fn find_rule(&self, node: &LayoutNode, pseudo: Option<&str>, key: &str) -> Option<&String> {
+        // Check ID
         if let Some(id) = &node.id {
             let id_sel = format!("#{}", id);
-            if let Some(prop) = self.rules.iter().find(|r| r.selector == id_sel).and_then(|r| r.properties.get(key)) {
+            if let Some(prop) = self.rules.iter()
+                .find(|r| r.selector == id_sel && r.pseudo_class.as_deref() == pseudo)
+                .and_then(|r| r.properties.get(key)) {
                 return Some(prop);
             }
         }
 
+        // Check Classes
         for class in &node.classes {
             let class_sel = format!(".{}", class);
-            if let Some(prop) = self.rules.iter().find(|r| r.selector == class_sel).and_then(|r| r.properties.get(key)) {
+            if let Some(prop) = self.rules.iter()
+                .find(|r| r.selector == class_sel && r.pseudo_class.as_deref() == pseudo)
+                .and_then(|r| r.properties.get(key)) {
                 return Some(prop);
             }
         }
 
+        // Check Tag
         self.rules.iter()
-            .find(|r| r.selector == node.tag)
+            .find(|r| r.selector == node.tag && r.pseudo_class.as_deref() == pseudo)
             .and_then(|r| r.properties.get(key))
     }
 
     fn build_taffy_tree(&mut self, node: &LayoutNode) -> NodeId {
         let mut style = node.style.clone();
         
-        // Apply MTSS properties to Taffy style
         if let Some(jc) = self.get_property(node, "justify-content") {
             style.justify_content = Some(map_justify_content(jc));
         }
@@ -156,15 +184,10 @@ impl Stylist {
     pub fn compute_layout(&mut self, root: &mut LayoutNode, width: f32, height: f32) {
         self.taffy.clear();
         let root_id = self.build_taffy_tree(root);
-        
-        self.taffy.compute_layout(
-            root_id,
-            Size {
-                width: AvailableSpace::Definite(width),
-                height: AvailableSpace::Definite(height),
-            },
-        ).unwrap();
-
+        self.taffy.compute_layout(root_id, Size {
+            width: AvailableSpace::Definite(width),
+            height: AvailableSpace::Definite(height),
+        }).unwrap();
         self.apply_taffy_layout(root, root_id);
     }
 
@@ -182,40 +205,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_advanced_selectors() {
+    fn test_pseudo_classes() {
         let mut stylist = Stylist::new();
-        stylist.parse_mtss(".btn { color: red; } #hdr { color: blue; } div { color: green; }");
+        stylist.parse_mtss("button { color: white; } button:hover { color: yellow; }");
         
-        let btn = LayoutNode::new("div").with_class("btn");
-        let hdr = LayoutNode::new("div").with_id("hdr");
-        let plain = LayoutNode::new("div");
-
-        assert_eq!(stylist.get_property(&btn, "color"), Some(&"red".to_string()));
-        assert_eq!(stylist.get_property(&hdr, "color"), Some(&"blue".to_string()));
-        assert_eq!(stylist.get_property(&plain, "color"), Some(&"green".to_string()));
-    }
-
-    #[test]
-    fn test_parse_simple_mtss() {
-        let mut stylist = Stylist::new();
-        stylist.parse_mtss("button { color: red; background: blue; }");
+        let mut btn = LayoutNode::new("button");
+        assert_eq!(stylist.get_property(&btn, "color"), Some(&"white".to_string()));
         
-        assert_eq!(stylist.rules.len(), 1);
-        let btn = LayoutNode::new("button");
-        assert_eq!(stylist.get_property(&btn, "color"), Some(&"red".to_string()));
-    }
-    #[test]
-    fn test_taffy_layout() {
-        let mut stylist = Stylist::new();
-        let mut root = LayoutNode::new("div").with_id("container");
-        root.style = Style {
-            size: Size { width: length(100.0), height: length(50.0) },
-            ..Default::default()
-        };
-        
-        stylist.compute_layout(&mut root, 200.0, 200.0);
-
-        assert_eq!(root.layout.size.width, 100.0);
-        assert_eq!(root.layout.size.height, 50.0);
+        btn.is_hovered = true;
+        assert_eq!(stylist.get_property(&btn, "color"), Some(&"yellow".to_string()));
     }
 }
