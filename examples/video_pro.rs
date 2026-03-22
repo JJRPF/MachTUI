@@ -1,8 +1,9 @@
-//! Video Pro Demo: High-Resolution Procedural Animation Frames.
+//! Video Pro Demo: High-Resolution Procedural Animation with Sixel Support.
 
 use machtui::core::Renderer;
 use machtui::core::components::{Component, BoxComponent};
 use machtui::vision::animations::ImageSequence;
+use machtui::vision::sixel::SixelRenderer;
 use machtui::vision::icons::Icons;
 use image::{DynamicImage, Rgb, RgbImage};
 use crossterm::event::{Event, KeyCode, KeyEvent};
@@ -56,6 +57,7 @@ async fn main() -> io::Result<()> {
         let b = BoxComponent::new(" LIVE STREAM ");
         b.render(canvas, 4, 3, 44, 22);
         
+        // Render using Braille fallback by default
         sequence.render(canvas, 6, 4, 40, 20);
 
         // --- CONTROLS ---
@@ -63,7 +65,7 @@ async fn main() -> io::Result<()> {
         ctrl_box.render(canvas, 50, 3, 20, 5);
         canvas.draw_text(52, 5, "Status: PLAYING", Some(Color::Green));
 
-        canvas.draw_text(2, 26, "Press 'q' to stop | 10 Procedural Sixel-ready Frames", Some(Color::DarkGrey));
+        canvas.draw_text(2, 26, "Press 'q' to stop | Procedural Sixel-ready Frames", Some(Color::DarkGrey));
 
         renderer.render()?;
     }
