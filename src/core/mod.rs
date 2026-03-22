@@ -13,6 +13,7 @@ pub mod http;
 pub mod db;
 pub mod shell;
 pub mod bridge;
+pub mod modals;
 
 use crossterm::{
     cursor,
