@@ -1,0 +1,10 @@
+[package]
+name = "machtui"
+version = "0.1.0"
+edition = "2021"
+description = "A next-generation Terminal User Interface engine with AI agent accessibility."
+
+[dependencies]
+crossterm = "0.27"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
