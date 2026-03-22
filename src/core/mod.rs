@@ -10,6 +10,7 @@ pub mod keys;
 pub mod notifications;
 pub mod testing;
 pub mod http;
+pub mod db;
 
 use crossterm::{
     cursor,
