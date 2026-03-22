@@ -17,6 +17,7 @@ pub mod modals;
 pub mod events;
 pub mod plugins;
 pub mod cloud;
+pub mod macros;
 
 use crossterm::{
     cursor,
