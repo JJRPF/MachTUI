@@ -85,6 +85,7 @@ pub mod components;
 pub mod animation;
 pub mod widgets;
 pub mod keys;
+pub mod notifications;
 
 use std::time::Instant;
 
