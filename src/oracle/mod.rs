@@ -2,7 +2,7 @@
 //!
 //! Provides semantic tree generation and a headless JSON API for AI agents.
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 pub mod server;
 
@@ -73,7 +73,7 @@ mod tests {
         let mut oracle = Oracle::new("window");
         let btn = SemanticNode::new("button").with_content("Submit");
         oracle.tree.add_child(btn);
-        
+
         let json = oracle.to_json();
         assert!(json.contains(r#""role": "window""#));
         assert!(json.contains(r#""role": "button""#));

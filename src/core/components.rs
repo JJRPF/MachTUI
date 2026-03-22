@@ -2,8 +2,8 @@
 //! Provides reusable UI elements with built-in styling and event handling.
 
 use crate::core::Canvas;
-use crossterm::style::Color;
 use crate::oracle::{OracleProvider, SemanticNode};
+use crossterm::style::Color;
 
 /// The base trait for all MachTUI components.
 pub trait Component {
@@ -32,18 +32,23 @@ impl ProgressBar {
 impl Component for ProgressBar {
     fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, _height: u16) {
         let filled_width = (width as f32 * self.progress) as u16;
-        
+
         // Draw track
         for i in 0..width {
             canvas.set_cell(x + i, y, '░', Some(Color::DarkGrey));
         }
-        
+
         // Draw fill with gradient
         let filled_text = "█".repeat(filled_width as usize);
         canvas.draw_gradient_text(x, y, &filled_text, self.start_color, self.end_color);
-        
+
         // Draw label
-        canvas.draw_text(x, y + 1, &format!("{} ({:.0}%)", self.label, self.progress * 100.0), Some(Color::White));
+        canvas.draw_text(
+            x,
+            y + 1,
+            &format!("{} ({:.0}%)", self.label, self.progress * 100.0),
+            Some(Color::White),
+        );
     }
 }
 
@@ -100,7 +105,6 @@ impl Component for BoxComponent {
 
 impl OracleProvider for BoxComponent {
     fn to_semantic(&self) -> SemanticNode {
-        SemanticNode::new("box")
-            .with_content(&self.title)
+        SemanticNode::new("box").with_content(&self.title)
     }
 }

@@ -40,11 +40,26 @@ impl VDom {
     fn diff_nodes(old: &VNode, new: &VNode) -> Patch {
         match (old, new) {
             (VNode::Text(old_text), VNode::Text(new_text)) => {
-                if old_text == new_text { Patch::Noop }
-                else { Patch::UpdateText(new_text.clone()) }
+                if old_text == new_text {
+                    Patch::Noop
+                } else {
+                    Patch::UpdateText(new_text.clone())
+                }
             }
-            (VNode::Element { tag: old_tag, props: old_props, children: old_children, .. },
-             VNode::Element { tag: new_tag, props: new_props, children: new_children, .. }) => {
+            (
+                VNode::Element {
+                    tag: old_tag,
+                    props: old_props,
+                    children: old_children,
+                    ..
+                },
+                VNode::Element {
+                    tag: new_tag,
+                    props: new_props,
+                    children: new_children,
+                    ..
+                },
+            ) => {
                 if old_tag != new_tag {
                     return Patch::Replace(new.clone());
                 }

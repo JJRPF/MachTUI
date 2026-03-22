@@ -20,7 +20,11 @@ impl Easing {
             Easing::QuadIn => t * t,
             Easing::QuadOut => t * (2.0 - t),
             Easing::QuadInOut => {
-                if t < 0.5 { 2.0 * t * t } else { -1.0 + (4.0 - 2.0 * t) * t }
+                if t < 0.5 {
+                    2.0 * t * t
+                } else {
+                    -1.0 + (4.0 - 2.0 * t) * t
+                }
             }
             Easing::CubicIn => t * t * t,
             Easing::CubicOut => {

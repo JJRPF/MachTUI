@@ -1,10 +1,10 @@
 //! Chat Demo: Advanced Layout and Widgets.
 
-use machtui::core::Renderer;
-use machtui::core::widgets::{TextInput, ListSelection};
-use machtui::core::components::{Component, BoxComponent};
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::widgets::{ListSelection, TextInput};
+use machtui::core::Renderer;
 use std::io;
 use std::time::Duration;
 
@@ -61,7 +61,12 @@ async fn main() -> io::Result<()> {
         // 3. Input Field (Bottom)
         input.render(canvas, start_x + 2, start_y + chat_h - 4, chat_w - 4, 3);
 
-        canvas.draw_text(start_x + 2, start_y + chat_h + 1, "Press Enter to Send | Q to Quit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            start_x + 2,
+            start_y + chat_h + 1,
+            "Press Enter to Send | Q to Quit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

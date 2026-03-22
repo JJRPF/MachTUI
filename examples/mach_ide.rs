@@ -1,10 +1,10 @@
 //! MachIDE Demo: High-End Code Editor with Syntax Highlighting and Layout.
 
-use machtui::core::Renderer;
-use machtui::core::widgets::ListSelection;
-use machtui::core::components::{Component, BoxComponent};
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::widgets::ListSelection;
+use machtui::core::Renderer;
 use std::io;
 use std::time::Duration;
 
@@ -17,7 +17,7 @@ async fn main() -> io::Result<()> {
         "Cargo.toml".to_string(),
         "README.md".to_string(),
     ]);
-    
+
     let code_lines = vec![
         "fn main() {".to_string(),
         "    println!(\"Hello MachTUI!\");".to_string(),
@@ -53,15 +53,31 @@ async fn main() -> io::Result<()> {
 
         // 3. Editor Area
         let edit_box = BoxComponent::new(" EDITOR ");
-        edit_box.render(canvas, sidebar_w + 1, header_h, canvas.width - sidebar_w - 2, canvas.height - header_h - 2);
-        
+        edit_box.render(
+            canvas,
+            sidebar_w + 1,
+            header_h,
+            canvas.width - sidebar_w - 2,
+            canvas.height - header_h - 2,
+        );
+
         for (i, line) in code_lines.iter().enumerate() {
             let y = header_h + 2 + i as u16;
-            canvas.draw_text(sidebar_w + 3, y, &format!("{:>2} | ", i + 1), Some(Color::DarkGrey));
+            canvas.draw_text(
+                sidebar_w + 3,
+                y,
+                &format!("{:>2} | ", i + 1),
+                Some(Color::DarkGrey),
+            );
             canvas.draw_text(sidebar_w + 8, y, line, Some(Color::White));
         }
 
-        canvas.draw_text(2, canvas.height - 1, "Arrows: Navigate Files | Q: Quit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            canvas.height - 1,
+            "Arrows: Navigate Files | Q: Quit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

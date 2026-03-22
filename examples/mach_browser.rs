@@ -1,18 +1,18 @@
 //! MachBrowser Demo: HTML-to-MachTUI Rendering.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::plume::converter::HtmlConverter;
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::Renderer;
+use machtui::plume::converter::HtmlConverter;
+use machtui::vision::icons::Icons;
 use std::io;
 use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let mut renderer = Renderer::new()?;
-    
+
     let html_content = r#"
         <body>
             <h1 id="header" class="title">MACHTUI WEB</h1>
@@ -29,7 +29,9 @@ async fn main() -> io::Result<()> {
     loop {
         if let Some(event) = renderer.poll_event(Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event {
-                if code == KeyCode::Char('q') { break; }
+                if code == KeyCode::Char('q') {
+                    break;
+                }
             }
         }
 
@@ -37,7 +39,13 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH BROWSER", Icons::ROCKET), (0, 255, 255), (255, 0, 255));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH BROWSER", Icons::ROCKET),
+            (0, 255, 255),
+            (255, 0, 255),
+        );
 
         // --- RENDER CONVERTED HTML ---
         let b = BoxComponent::new(" HTML VIEWPORT ");
@@ -46,7 +54,12 @@ async fn main() -> io::Result<()> {
         // Simple recursive render of the converted node
         render_layout_node(&root_node, canvas, 4, 5);
 
-        canvas.draw_text(2, canvas.height - 1, "Press 'q' to exit | HTML -> Plume -> MachTUI", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            canvas.height - 1,
+            "Press 'q' to exit | HTML -> Plume -> MachTUI",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }
@@ -55,9 +68,14 @@ async fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn render_layout_node(node: &machtui::plume::LayoutNode, canvas: &mut machtui::core::Canvas, x: u16, y: u16) -> u16 {
+fn render_layout_node(
+    node: &machtui::plume::LayoutNode,
+    canvas: &mut machtui::core::Canvas,
+    x: u16,
+    y: u16,
+) -> u16 {
     let mut offset_y = 0;
-    
+
     match node.tag.as_str() {
         "h1" => {
             if let Some(ref id) = node.id {

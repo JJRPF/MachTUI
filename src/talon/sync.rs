@@ -1,8 +1,7 @@
 //! State Synchronization for Talon.
 //! Allows multiple MachTUI instances to share and sync their Model state.
 
-use serde::{Serialize, Deserialize};
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct StateDelta {
@@ -26,7 +25,7 @@ impl StateSyncManager {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_secs();
-            
+
         self.deltas.push(StateDelta {
             key: key.to_string(),
             value,

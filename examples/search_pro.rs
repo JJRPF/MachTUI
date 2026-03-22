@@ -1,11 +1,11 @@
 //! Search Pro Demo: High-End Search Interface with AI-Native Oracle support.
 
-use machtui::core::Renderer;
-use machtui::core::widgets::{TextInput, ListSelection};
-use machtui::core::components::{Component, BoxComponent};
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::widgets::{ListSelection, TextInput};
+use machtui::core::Renderer;
+use machtui::vision::icons::Icons;
 use std::io;
 use std::time::Duration;
 
@@ -32,7 +32,8 @@ async fn main() -> io::Result<()> {
                     KeyCode::Char('q') => break,
                     KeyCode::Char(c) => {
                         search_input.handle_char(c);
-                        let filtered: Vec<String> = all_items.iter()
+                        let filtered: Vec<String> = all_items
+                            .iter()
                             .filter(|s| s.contains(&search_input.content))
                             .cloned()
                             .collect();
@@ -40,7 +41,8 @@ async fn main() -> io::Result<()> {
                     }
                     KeyCode::Backspace => {
                         search_input.handle_backspace();
-                        let filtered: Vec<String> = all_items.iter()
+                        let filtered: Vec<String> = all_items
+                            .iter()
                             .filter(|s| s.contains(&search_input.content))
                             .cloned()
                             .collect();
@@ -57,7 +59,13 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH SEARCH PRO", Icons::CHART), (0, 255, 255), (255, 255, 0));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH SEARCH PRO", Icons::CHART),
+            (0, 255, 255),
+            (255, 255, 0),
+        );
 
         // --- SEARCH INPUT ---
         search_input.render(canvas, 2, 3, canvas.width - 4, 3);
@@ -65,14 +73,19 @@ async fn main() -> io::Result<()> {
         // --- RESULTS ---
         let res_box = BoxComponent::new(&format!(" RESULTS ({}) ", results.items.len()));
         res_box.render(canvas, 2, 7, canvas.width - 4, canvas.height - 10);
-        
+
         if results.items.is_empty() {
             canvas.draw_text(4, 9, "No repositories found.", Some(Color::DarkGrey));
         } else {
             results.render(canvas, 4, 9, canvas.width - 8, canvas.height - 14);
         }
 
-        canvas.draw_text(2, canvas.height - 1, "Type to filter | Arrows: Select | Q: Quit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            canvas.height - 1,
+            "Type to filter | Arrows: Select | Q: Quit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

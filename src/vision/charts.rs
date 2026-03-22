@@ -16,7 +16,9 @@ impl Sparkline {
     }
 
     pub fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, height: u16) {
-        if self.data.is_empty() { return; }
+        if self.data.is_empty() {
+            return;
+        }
 
         let mut subpixels = SubPixelCanvas::new(width, height);
         let max = self.data.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
@@ -30,7 +32,7 @@ impl Sparkline {
             let px = (i as f32 / self.data.len() as f32 * sub_w as f32) as u16;
             let normalized = (val - min) / range;
             let py = (sub_h as f32 - (normalized * (sub_h - 1) as f32)) as u16;
-            
+
             if px < sub_w && py < sub_h {
                 subpixels.set_pixel(px, py, true);
             }
@@ -56,11 +58,17 @@ pub struct AreaChart {
 
 impl AreaChart {
     pub fn new(data: Vec<f32>, primary: Color, fill: (u8, u8, u8)) -> Self {
-        Self { data, primary_color: primary, fill_color: fill }
+        Self {
+            data,
+            primary_color: primary,
+            fill_color: fill,
+        }
     }
 
     pub fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, height: u16) {
-        if self.data.is_empty() { return; }
+        if self.data.is_empty() {
+            return;
+        }
 
         let mut subpixels = SubPixelCanvas::new(width, height);
         let max = self.data.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
@@ -74,7 +82,7 @@ impl AreaChart {
             let px = (i as f32 / self.data.len() as f32 * sub_w as f32) as u16;
             let normalized = (val - min) / range;
             let py_top = (sub_h as f32 - (normalized * (sub_h - 1) as f32)) as u16;
-            
+
             if px < sub_w {
                 for py in py_top..sub_h {
                     subpixels.set_pixel(px, py, true);

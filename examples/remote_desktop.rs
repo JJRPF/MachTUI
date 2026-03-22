@@ -1,11 +1,11 @@
 //! Remote Desktop Demo: Multi-host management and SSH Bridge.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::core::widgets::{TextInput, ListSelection};
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::widgets::ListSelection;
+use machtui::core::Renderer;
+use machtui::vision::icons::Icons;
 use std::io;
 use std::time::Duration;
 
@@ -17,7 +17,7 @@ async fn main() -> io::Result<()> {
         "prod-db-01".into(),
         "staging-api-01".into(),
     ]);
-    
+
     let mut logs = ListSelection::new(vec!["Select a host to begin...".into()]);
 
     loop {
@@ -31,7 +31,8 @@ async fn main() -> io::Result<()> {
                         let host = &hosts.items[hosts.selected_idx];
                         logs.items.push(format!("Connecting to {}...", host));
                         // Simulated connection
-                        logs.items.push(format!("{}: Authentication Success.", host));
+                        logs.items
+                            .push(format!("{}: Authentication Success.", host));
                         logs.items.push(format!("{}: System load 0.12", host));
                     }
                     _ => {}
@@ -43,7 +44,13 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH REMOTE DESKTOP", Icons::GEAR), (255, 100, 0), (255, 255, 0));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH REMOTE DESKTOP", Icons::GEAR),
+            (255, 100, 0),
+            (255, 255, 0),
+        );
 
         // --- HOST LIST ---
         let side_box = BoxComponent::new(" REMOTE HOSTS ");
@@ -55,7 +62,12 @@ async fn main() -> io::Result<()> {
         main_box.render(canvas, 28, 3, canvas.width - 30, 15);
         logs.render(canvas, 30, 5, canvas.width - 34, 12);
 
-        canvas.draw_text(2, 19, "Arrows: Select Host | Enter: Connect | Q: Quit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            19,
+            "Arrows: Select Host | Enter: Connect | Q: Quit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

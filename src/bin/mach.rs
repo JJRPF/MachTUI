@@ -1,13 +1,13 @@
 use clap::{Parser, Subcommand};
-use std::process;
-use machtui::core::Renderer;
-use machtui::talon::{Model, Program, Cmd};
-use machtui::oracle::SemanticNode;
-use machtui::vision::utils::get_ascii_art;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::Renderer;
+use machtui::oracle::SemanticNode;
+use machtui::talon::{Cmd, Model, Program};
+use machtui::vision::utils::get_ascii_art;
 use std::io;
 use std::path::PathBuf;
+use std::process;
 use std::time::Duration;
 
 #[derive(Parser)]
@@ -82,10 +82,14 @@ impl Model for SettingsModel {
             SettingsMsg::ToggleLocally => self.serve_locally = !self.serve_locally,
             SettingsMsg::ToggleSSH => self.serve_ssh = !self.serve_ssh,
             SettingsMsg::MoveUp => {
-                if self.cursor_idx > 0 { self.cursor_idx -= 1; }
+                if self.cursor_idx > 0 {
+                    self.cursor_idx -= 1;
+                }
             }
             SettingsMsg::MoveDown => {
-                if self.cursor_idx < 2 + self.examples.len() - 1 { self.cursor_idx += 1; }
+                if self.cursor_idx < 2 + self.examples.len() - 1 {
+                    self.cursor_idx += 1;
+                }
             }
             SettingsMsg::LaunchExample(name) => {
                 self.selected_example = Some(name);
@@ -203,18 +207,26 @@ async fn main() -> io::Result<()> {
         Commands::Oracle { server } => {
             if *server {
                 println!("Starting MachTUI Oracle JSON-RPC server on port 9090...");
-                
+
                 #[derive(Debug)]
                 struct MockApp;
                 impl Model for MockApp {
                     type Message = ();
-                    fn update(&mut self, _: ()) -> Option<Cmd<()>> { None }
-                    fn view(&self) -> String { "Headless MachTUI".into() }
-                    fn semantic_view(&self) -> SemanticNode { SemanticNode::new("headless_root") }
+                    fn update(&mut self, _: ()) -> Option<Cmd<()>> {
+                        None
+                    }
+                    fn view(&self) -> String {
+                        "Headless MachTUI".into()
+                    }
+                    fn semantic_view(&self) -> SemanticNode {
+                        SemanticNode::new("headless_root")
+                    }
                 }
 
                 let prog = Program::new(MockApp);
-                machtui::oracle::server::start_ai_server(&prog, 9090).await.expect("Server failed");
+                machtui::oracle::server::start_ai_server(&prog, 9090)
+                    .await
+                    .expect("Server failed");
             } else {
                 println!("MachTUI Oracle: Inspection Mode");
             }
@@ -236,24 +248,31 @@ async fn main() -> io::Result<()> {
             println!("0 tests failed, 0 tests passed (Snapshot verification foundation ready)");
         }
         Commands::Serve { port } => {
-            println!("🚀 Starting MachTUI Remote Stream Server on port {}...", port);
+            println!(
+                "🚀 Starting MachTUI Remote Stream Server on port {}...",
+                port
+            );
             let runtime = tokio::runtime::Runtime::new().unwrap();
             runtime.block_on(async {
-                let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await.unwrap();
+                let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))
+                    .await
+                    .unwrap();
                 println!("📡 Listening for remote TUI viewers...");
-                
+
                 // For now, we'll stream a simple animated frame
                 loop {
                     let (mut socket, addr) = listener.accept().await.unwrap();
                     println!("👤 Remote client connected: {}", addr);
-                    
+
                     tokio::spawn(async move {
                         use tokio::io::AsyncWriteExt;
                         let renderer = machtui::core::HeadlessRenderer::new(80, 24);
                         loop {
                             let frame = renderer.render_frame();
                             let json = serde_json::to_vec(&frame).unwrap();
-                            if let Err(_) = socket.write_all(&json).await { break; }
+                            if let Err(_) = socket.write_all(&json).await {
+                                break;
+                            }
                             tokio::time::sleep(std::time::Duration::from_millis(100)).await;
                         }
                     });
@@ -263,8 +282,8 @@ async fn main() -> io::Result<()> {
         Commands::Dev => {
             println!("🛠️ Entering MachTUI Development Mode...");
             println!("👀 Watching for .mtss and .rs changes...");
-            use notify::{Watcher, RecursiveMode, Result};
-            
+            use notify::{RecursiveMode, Result, Watcher};
+
             let mut watcher = notify::recommended_watcher(|res: Result<notify::Event>| {
                 match res {
                     Ok(event) => {
@@ -275,12 +294,17 @@ async fn main() -> io::Result<()> {
                     }
                     Err(e) => println!("❌ Watcher error: {:?}", e),
                 }
-            }).unwrap();
+            })
+            .unwrap();
 
-            watcher.watch(std::path::Path::new("."), RecursiveMode::Recursive).unwrap();
-            
+            watcher
+                .watch(std::path::Path::new("."), RecursiveMode::Recursive)
+                .unwrap();
+
             // Keep alive
-            loop { std::thread::sleep(std::time::Duration::from_secs(1)); }
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
         }
         Commands::Fmt => {
             println!("🎨 Formatting MachTUI project files...");
@@ -376,7 +400,7 @@ async fn run_configurator() -> io::Result<Option<String>> {
 
         let canvas = renderer.canvas_mut();
         canvas.clear();
-        
+
         // --- PRETTY HEADER ---
         for (i, line) in header_art.iter().enumerate() {
             canvas.draw_gradient_text(4, 1 + i as u16, line, (255, 100, 0), (255, 255, 0));
@@ -385,24 +409,71 @@ async fn run_configurator() -> io::Result<Option<String>> {
 
         // --- SETTINGS ---
         canvas.draw_text(4, 9, "⚙ SETTINGS", Some(Color::Cyan));
-        
-        let local_sel = if prog.model().cursor_idx == 0 { "> " } else { "  " };
-        let local_color = if prog.model().cursor_idx == 0 { Color::White } else { Color::Grey };
-        canvas.draw_text(4, 10, &format!("{}[{}] Serve Locally", local_sel, if prog.model().serve_locally { "X" } else { " " }), Some(local_color));
 
-        let ssh_sel = if prog.model().cursor_idx == 1 { "> " } else { "  " };
-        let ssh_color = if prog.model().cursor_idx == 1 { Color::White } else { Color::Grey };
-        canvas.draw_text(4, 11, &format!("{}[{}] Serve to SSH", ssh_sel, if prog.model().serve_ssh { "X" } else { " " }), Some(ssh_color));
+        let local_sel = if prog.model().cursor_idx == 0 {
+            "> "
+        } else {
+            "  "
+        };
+        let local_color = if prog.model().cursor_idx == 0 {
+            Color::White
+        } else {
+            Color::Grey
+        };
+        canvas.draw_text(
+            4,
+            10,
+            &format!(
+                "{}[{}] Serve Locally",
+                local_sel,
+                if prog.model().serve_locally { "X" } else { " " }
+            ),
+            Some(local_color),
+        );
+
+        let ssh_sel = if prog.model().cursor_idx == 1 {
+            "> "
+        } else {
+            "  "
+        };
+        let ssh_color = if prog.model().cursor_idx == 1 {
+            Color::White
+        } else {
+            Color::Grey
+        };
+        canvas.draw_text(
+            4,
+            11,
+            &format!(
+                "{}[{}] Serve to SSH",
+                ssh_sel,
+                if prog.model().serve_ssh { "X" } else { " " }
+            ),
+            Some(ssh_color),
+        );
 
         // --- EXAMPLES ---
         canvas.draw_text(4, 13, "🚀 LAUNCH EXAMPLES", Some(Color::Magenta));
         for (i, ex) in prog.model().examples.iter().enumerate() {
-            let sel = if prog.model().cursor_idx == 2 + i { "> " } else { "  " };
-            let color = if prog.model().cursor_idx == 2 + i { Color::Green } else { Color::Grey };
+            let sel = if prog.model().cursor_idx == 2 + i {
+                "> "
+            } else {
+                "  "
+            };
+            let color = if prog.model().cursor_idx == 2 + i {
+                Color::Green
+            } else {
+                Color::Grey
+            };
             canvas.draw_text(4, 14 + i as u16, &format!("{}{}", sel, ex), Some(color));
         }
 
-        canvas.draw_text(4, 21, "Arrows: Move | Space: Toggle | Enter: Launch | Q: Exit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            4,
+            21,
+            "Arrows: Move | Space: Toggle | Enter: Launch | Q: Exit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

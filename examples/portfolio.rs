@@ -1,10 +1,10 @@
 //! Portfolio Demo: High-End Aesthetics, Layout, and Hover effects.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::vision::utils::get_ascii_art;
 use crossterm::event::{Event, KeyCode, KeyEvent, MouseEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::Renderer;
+use machtui::vision::utils::get_ascii_art;
 use std::io;
 use std::time::Duration;
 
@@ -17,7 +17,9 @@ async fn main() -> io::Result<()> {
         if let Some(event) = renderer.poll_event(Duration::from_millis(16))? {
             match event {
                 Event::Key(KeyEvent { code, .. }) => {
-                    if code == KeyCode::Char('q') { break; }
+                    if code == KeyCode::Char('q') {
+                        break;
+                    }
                 }
                 Event::Mouse(MouseEvent { column, row, .. }) => {
                     mouse_pos = (column, row);
@@ -31,7 +33,11 @@ async fn main() -> io::Result<()> {
 
         // --- BACKGROUND DECORATION ---
         for i in 0..canvas.width {
-            let color = Color::Rgb { r: 15, g: 23, b: (i % 40 + 20) as u8 };
+            let color = Color::Rgb {
+                r: 15,
+                g: 23,
+                b: (i % 40 + 20) as u8,
+            };
             for j in 0..canvas.height {
                 canvas.set_cell(i, j, ' ', Some(color));
             }
@@ -52,13 +58,25 @@ async fn main() -> io::Result<()> {
             let w = 16;
             let h = 6;
 
-            let is_hovered = mouse_pos.0 >= x && mouse_pos.0 < x + w && mouse_pos.1 >= y && mouse_pos.1 < y + h;
-            let border_color = if is_hovered { Color::Yellow } else { Color::DarkGrey };
-            let title_color = if is_hovered { Color::White } else { Color::Grey };
+            let is_hovered =
+                mouse_pos.0 >= x && mouse_pos.0 < x + w && mouse_pos.1 >= y && mouse_pos.1 < y + h;
+            let border_color = if is_hovered {
+                Color::Yellow
+            } else {
+                Color::DarkGrey
+            };
+            let title_color = if is_hovered {
+                Color::White
+            } else {
+                Color::Grey
+            };
 
-            let card_box = BoxComponent { title: "".into(), border_color };
+            let card_box = BoxComponent {
+                title: "".into(),
+                border_color,
+            };
             card_box.render(canvas, x, y, w, h);
-            
+
             canvas.draw_text(x + 2, y + 2, title, Some(title_color));
             if is_hovered {
                 canvas.draw_text(x + 2, y + 4, "CLICK TO VIEW", Some(Color::Cyan));
@@ -66,7 +84,12 @@ async fn main() -> io::Result<()> {
         }
 
         // --- FOOTER ---
-        canvas.draw_text(4, 18, "Press 'q' to exit | Use mouse to explore", Some(Color::DarkGrey));
+        canvas.draw_text(
+            4,
+            18,
+            "Press 'q' to exit | Use mouse to explore",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

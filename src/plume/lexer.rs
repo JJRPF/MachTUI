@@ -91,14 +91,17 @@ mod tests {
     fn test_lexer() {
         let mut lexer = Lexer::new("button { color: red; }");
         let tokens = lexer.tokens();
-        assert_eq!(tokens, vec![
-            Token::Ident("button".to_string()),
-            Token::OpenBrace,
-            Token::Ident("color".to_string()),
-            Token::Colon,
-            Token::Ident("red".to_string()),
-            Token::Semicolon,
-            Token::CloseBrace,
-        ]);
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Ident("button".to_string()),
+                Token::OpenBrace,
+                Token::Ident("color".to_string()),
+                Token::Colon,
+                Token::Ident("red".to_string()),
+                Token::Semicolon,
+                Token::CloseBrace,
+            ]
+        );
     }
 }

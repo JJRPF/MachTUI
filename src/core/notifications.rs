@@ -1,9 +1,9 @@
 //! High-end notification system for MachTUI.
 //! Provides "Toast" notifications with automatic expiry and animation.
 
-use std::time::{Duration, Instant};
 use crate::core::Canvas;
 use crossterm::style::Color;
+use std::time::{Duration, Instant};
 
 pub struct Notification {
     pub message: String,
@@ -55,11 +55,16 @@ impl NotificationManager {
         for (i, notification) in self.queue.iter().enumerate() {
             let x = canvas.width.saturating_sub(35);
             let y = 1 + (i as u16 * 3);
-            
+
             // Draw Toast Box
             let color = notification.level.color();
             canvas.draw_text(x, y, "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓", Some(color));
-            canvas.draw_text(x, y + 1, &format!("┃ {:<28} ┃", notification.message), Some(Color::White));
+            canvas.draw_text(
+                x,
+                y + 1,
+                &format!("┃ {:<28} ┃", notification.message),
+                Some(Color::White),
+            );
             canvas.draw_text(x, y + 2, "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛", Some(color));
         }
     }

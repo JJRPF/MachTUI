@@ -1,11 +1,11 @@
 //! Diagram Pro Demo: Vector Graphics and Shapes.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::vision::vector::VectorCanvas;
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::Component;
+use machtui::core::Renderer;
+use machtui::vision::icons::Icons;
+use machtui::vision::vector::VectorCanvas;
 use std::io;
 use std::time::Duration;
 
@@ -17,7 +17,9 @@ async fn main() -> io::Result<()> {
     loop {
         if let Some(event) = renderer.poll_event(Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event {
-                if code == KeyCode::Char('q') { break; }
+                if code == KeyCode::Char('q') {
+                    break;
+                }
             }
         }
 
@@ -27,11 +29,17 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH DIAGRAM PRO", Icons::GEAR), (255, 255, 0), (255, 0, 255));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH DIAGRAM PRO", Icons::GEAR),
+            (255, 255, 0),
+            (255, 0, 255),
+        );
 
         // --- VECTOR VIEWPORT ---
         let mut vc = VectorCanvas::new(40, 15);
-        
+
         // Draw some static shapes
         vc.draw_rect(5, 5, 30, 20);
         vc.draw_line(5, 5, 35, 25);
@@ -57,7 +65,12 @@ async fn main() -> io::Result<()> {
             }
         }
 
-        canvas.draw_text(2, 22, "Press 'q' to exit | Real-time Vector Bresenham Line Rendering", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            22,
+            "Press 'q' to exit | Real-time Vector Bresenham Line Rendering",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

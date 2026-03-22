@@ -2,7 +2,7 @@
 //! Provides streaming support for MachTUI canvases over the network.
 
 use crate::core::Canvas;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct CanvasFrame {
@@ -22,7 +22,10 @@ impl RemoteGateway {
                 let idx = (y as usize * canvas.width as usize) + x as usize;
                 let cell = &canvas.cells[idx];
                 if cell.content != ' ' {
-                    let fg = cell.style.foreground_color.unwrap_or(crossterm::style::Color::Reset);
+                    let fg = cell
+                        .style
+                        .foreground_color
+                        .unwrap_or(crossterm::style::Color::Reset);
                     let rgb = match fg {
                         crossterm::style::Color::Rgb { r, g, b } => (r, g, b),
                         _ => (255, 255, 255),

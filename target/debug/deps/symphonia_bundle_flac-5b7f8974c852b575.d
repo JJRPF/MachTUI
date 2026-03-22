@@ -1,0 +1,10 @@
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/symphonia_bundle_flac-5b7f8974c852b575.d: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/decoder.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/demuxer.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/frame.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/parser.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/validate.rs
+
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/libsymphonia_bundle_flac-5b7f8974c852b575.rmeta: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/decoder.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/demuxer.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/frame.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/parser.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/validate.rs
+
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/lib.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/decoder.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/demuxer.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/frame.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/parser.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/symphonia-bundle-flac-0.5.5/src/validate.rs:

@@ -1,11 +1,11 @@
 //! Matrix Rain Demo: High-Speed Character Streaming and Color Fading.
 
-use machtui::core::Renderer;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::Renderer;
+use rand::RngExt;
 use std::io;
 use std::time::Duration;
-use rand::RngExt;
 
 struct Drop {
     x: u16,
@@ -18,17 +18,23 @@ struct Drop {
 async fn main() -> io::Result<()> {
     let mut renderer = Renderer::new()?;
     let mut rng = rand::rng();
-    let mut drops: Vec<Drop> = (0..50).map(|_| Drop {
-        x: rng.random_range(0..renderer.canvas_mut().width),
-        y: rng.random_range(-20.0..0.0),
-        speed: rng.random_range(5.0..15.0),
-        chars: (0..10).map(|_| (rng.random_range(33..126) as u8 as char)).collect(),
-    }).collect();
+    let mut drops: Vec<Drop> = (0..50)
+        .map(|_| Drop {
+            x: rng.random_range(0..renderer.canvas_mut().width),
+            y: rng.random_range(-20.0..0.0),
+            speed: rng.random_range(5.0..15.0),
+            chars: (0..10)
+                .map(|_| rng.random_range(33..126) as u8 as char)
+                .collect(),
+        })
+        .collect();
 
     loop {
         if let Some(event) = renderer.poll_event(Duration::from_millis(16))? {
             if let Event::Key(KeyEvent { code, .. }) = event {
-                if code == KeyCode::Char('q') { break; }
+                if code == KeyCode::Char('q') {
+                    break;
+                }
             }
         }
 
@@ -49,7 +55,11 @@ async fn main() -> io::Result<()> {
                     let color = if i == 0 {
                         Color::White
                     } else {
-                        Color::Rgb { r: 0, g: (255.0 * alpha) as u8, b: 0 }
+                        Color::Rgb {
+                            r: 0,
+                            g: (255.0 * alpha) as u8,
+                            b: 0,
+                        }
                     };
                     canvas.set_cell(drop.x, py as u16, drop.chars[i], Some(color));
                 }
@@ -61,7 +71,13 @@ async fn main() -> io::Result<()> {
         }
 
         canvas.draw_gradient_text_z(2, 1, "MACHTUI DIGITAL RAIN", (0, 255, 0), (0, 100, 0), 10);
-        canvas.draw_text_z(2, 2, "High-Speed Streaming Engine | Press 'q' to exit", Some(Color::DarkGrey), 10);
+        canvas.draw_text_z(
+            2,
+            2,
+            "High-Speed Streaming Engine | Press 'q' to exit",
+            Some(Color::DarkGrey),
+            10,
+        );
 
         renderer.render()?;
     }

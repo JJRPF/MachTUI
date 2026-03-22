@@ -1,7 +1,7 @@
 //! Sound Engine for MachTUI.
 //! Provides high-level audio playback and visualization support using Rodio 0.22.
 
-use rodio::{MixerDeviceSink, Player, source::Source};
+use rodio::{source::Source, Player};
 
 pub struct SoundEngine {
     _handle: rodio::MixerDeviceSink,

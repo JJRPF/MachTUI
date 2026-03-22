@@ -1,11 +1,11 @@
 //! Project Pro Demo: Task Management and Checklists.
 
-use machtui::core::Renderer;
-use machtui::core::widgets::{Checklist, Tabs};
-use machtui::core::components::{Component, BoxComponent};
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::widgets::{Checklist, Tabs};
+use machtui::core::Renderer;
+use machtui::vision::icons::Icons;
 use std::io;
 use std::time::Duration;
 
@@ -18,7 +18,7 @@ async fn main() -> io::Result<()> {
         "Add Kitty image support".into(),
         "Optimize VDom diffing".into(),
     ]);
-    
+
     let mut tabs = Tabs::new(vec!["Active".into(), "Completed".into(), "Settings".into()]);
 
     loop {
@@ -39,15 +39,24 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH PROJECT PRO", Icons::GEAR), (0, 255, 100), (0, 200, 255));
-        
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH PROJECT PRO", Icons::GEAR),
+            (0, 255, 100),
+            (0, 200, 255),
+        );
+
         // --- TABS ---
         tabs.render(canvas, 2, 3, 40, 1);
 
         // --- MAIN TASK AREA ---
-        let main_box = BoxComponent::new(&format!(" {} ", tabs.titles[tabs.selected_idx].to_uppercase()));
+        let main_box = BoxComponent::new(&format!(
+            " {} ",
+            tabs.titles[tabs.selected_idx].to_uppercase()
+        ));
         main_box.render(canvas, 2, 5, 50, 15);
-        
+
         if tabs.selected_idx == 0 {
             tasks.render(canvas, 4, 7, 46, 12);
         } else {
@@ -58,10 +67,20 @@ async fn main() -> io::Result<()> {
         let stats_box = BoxComponent::new(" STATUS ");
         stats_box.render(canvas, 54, 5, 24, 8);
         let done = tasks.items.iter().filter(|i| i.1).count();
-        canvas.draw_text(56, 7, &format!("Done: {}/{}", done, tasks.items.len()), Some(Color::Green));
+        canvas.draw_text(
+            56,
+            7,
+            &format!("Done: {}/{}", done, tasks.items.len()),
+            Some(Color::Green),
+        );
         canvas.draw_text(56, 9, "Health: OPTIMAL", Some(Color::Cyan));
 
-        canvas.draw_text(2, 21, "Arrows: Nav | Space: Toggle | Tab: Tabs | Q: Quit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            21,
+            "Arrows: Nav | Space: Toggle | Tab: Tabs | Q: Quit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

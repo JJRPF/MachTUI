@@ -24,13 +24,15 @@ impl ImageSequence {
 
     pub fn current_frame(&self) -> &DynamicImage {
         let elapsed = self.start_time.elapsed();
-        let total_duration = self.frame_duration * self.frames.len() as u32;
         let index = (elapsed.as_millis() / self.frame_duration.as_millis()) as usize % self.frames.len();
         &self.frames[index]
     }
 
+
     pub fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, height: u16) {
-        if self.frames.is_empty() { return; }
+        if self.frames.is_empty() {
+            return;
+        }
         ImageRenderer::render_to_canvas(self.current_frame(), canvas, x, y, width, height);
     }
 }

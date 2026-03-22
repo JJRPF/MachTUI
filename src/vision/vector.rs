@@ -27,7 +27,9 @@ impl VectorCanvas {
 
         loop {
             self.canvas.set_pixel(x as u16, y as u16, true);
-            if x == x1 && y == y1 { break; }
+            if x == x1 && y == y1 {
+                break;
+            }
             let e2 = 2 * err;
             if e2 >= dy {
                 err += dy;

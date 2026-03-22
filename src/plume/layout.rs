@@ -1,6 +1,5 @@
 //! Advanced layout utilities for Plume.
 
-use crate::plume::LayoutNode;
 use taffy::prelude::*;
 
 /// Maps string property values to Taffy Flexbox properties.

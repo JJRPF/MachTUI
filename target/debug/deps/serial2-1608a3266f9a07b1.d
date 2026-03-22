@@ -1,0 +1,12 @@
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/serial2-1608a3266f9a07b1.d: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/into_settings.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/serial_port.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/settings.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/os.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/apple.rs
+
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/libserial2-1608a3266f9a07b1.rmeta: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/into_settings.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/serial_port.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/settings.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/os.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/apple.rs
+
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/lib.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/mod.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/mod.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/into_settings.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/serial_port.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/settings.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/os.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serial2-0.2.34/src/sys/unix/apple.rs:

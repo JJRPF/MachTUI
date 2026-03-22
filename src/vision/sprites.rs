@@ -33,7 +33,12 @@ impl Sprite {
     pub fn render(&self, canvas: &mut Canvas) {
         if let Some(frame) = self.frames.get(self.current_frame) {
             for (i, line) in frame.iter().enumerate() {
-                canvas.draw_text(self.x as u16, self.y as u16 + i as u16, line, Some(Color::White));
+                canvas.draw_text(
+                    self.x as u16,
+                    self.y as u16 + i as u16,
+                    line,
+                    Some(Color::White),
+                );
             }
         }
     }

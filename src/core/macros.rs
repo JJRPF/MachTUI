@@ -2,7 +2,7 @@
 //! Allows recording and playing back TUI interactions.
 
 use crossterm::event::Event;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -1,11 +1,11 @@
 //! Terminal Pro Demo: Embedded Shells and Multi-session management.
 
-use machtui::core::Renderer;
-use machtui::core::shell::ShellComponent;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::shell::ShellComponent;
+use machtui::core::Renderer;
+use machtui::vision::icons::Icons;
 use std::io;
 use std::time::Duration;
 
@@ -25,7 +25,9 @@ async fn main() -> io::Result<()> {
                         command_input.clear();
                     }
                     KeyCode::Char(c) => command_input.push(c),
-                    KeyCode::Backspace => { command_input.pop(); }
+                    KeyCode::Backspace => {
+                        command_input.pop();
+                    }
                     _ => {}
                 }
             }
@@ -35,7 +37,13 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         // --- HEADER ---
-        canvas.draw_gradient_text(2, 1, &format!("{} MACH TERMINAL PRO", Icons::GEAR), (0, 255, 255), (255, 255, 255));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            &format!("{} MACH TERMINAL PRO", Icons::GEAR),
+            (0, 255, 255),
+            (255, 255, 255),
+        );
 
         // --- TERMINAL VIEWPORT ---
         let b = BoxComponent::new(" BASH SESSION ");
@@ -45,9 +53,19 @@ async fn main() -> io::Result<()> {
         // --- INPUT BAR ---
         let input_box = BoxComponent::new(" COMMAND ");
         input_box.render(canvas, 2, canvas.height - 5, canvas.width - 4, 3);
-        canvas.draw_text(4, canvas.height - 4, &format!("$ {}█", command_input), Some(Color::Green));
+        canvas.draw_text(
+            4,
+            canvas.height - 4,
+            &format!("$ {}█", command_input),
+            Some(Color::Green),
+        );
 
-        canvas.draw_text(2, canvas.height - 1, "Type Command + Enter | Q: Quit | Real-time PTY integration", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            canvas.height - 1,
+            "Type Command + Enter | Q: Quit | Real-time PTY integration",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

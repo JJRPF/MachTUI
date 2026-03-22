@@ -1,11 +1,11 @@
 //! Kitchen Sink Demo: Gradients, ASCII Art, Mouse support, and MVU.
 
-use machtui::core::Renderer;
-use machtui::talon::{Model, Program, Cmd};
-use machtui::vision::utils::get_ascii_art;
-use machtui::oracle::SemanticNode;
 use crossterm::event::{Event, KeyCode, KeyEvent, MouseEvent, MouseEventKind};
 use crossterm::style::Color;
+use machtui::core::Renderer;
+use machtui::oracle::SemanticNode;
+use machtui::talon::{Cmd, Model, Program};
+use machtui::vision::utils::get_ascii_art;
 use std::io;
 use std::time::Duration;
 
@@ -59,9 +59,13 @@ async fn main() -> io::Result<()> {
         if let Some(event) = renderer.poll_event(Duration::from_millis(10))? {
             match event {
                 Event::Key(KeyEvent { code, .. }) => {
-                    if code == KeyCode::Char('q') { prog.dispatch(Msg::Exit); }
+                    if code == KeyCode::Char('q') {
+                        prog.dispatch(Msg::Exit);
+                    }
                 }
-                Event::Mouse(MouseEvent { kind, column, row, .. }) => {
+                Event::Mouse(MouseEvent {
+                    kind, column, row, ..
+                }) => {
                     prog.dispatch(Msg::MouseMove(column, row));
                     if let MouseEventKind::Down(_) = kind {
                         prog.dispatch(Msg::Click);
@@ -84,9 +88,14 @@ async fn main() -> io::Result<()> {
         canvas.draw_text(2, 8, "--- HIGH-END TUI EXPERIENCE ---", Some(Color::Yellow));
         canvas.draw_text(2, 10, &prog.model().view(), Some(Color::Green));
         canvas.draw_text(2, 12, "Use your mouse to interact!", Some(Color::Cyan));
-        
+
         // Draw a mouse cursor indicator
-        canvas.set_cell(prog.model().mouse_pos.0, prog.model().mouse_pos.1, 'X', Some(Color::Red));
+        canvas.set_cell(
+            prog.model().mouse_pos.0,
+            prog.model().mouse_pos.1,
+            'X',
+            Some(Color::Red),
+        );
 
         renderer.render()?;
     }

@@ -1,10 +1,10 @@
 //! MVU Async Demo: Showcasing Cmd and background tasks.
 
-use machtui::core::Renderer;
-use machtui::talon::{Model, Program, Cmd};
-use machtui::oracle::SemanticNode;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::Renderer;
+use machtui::oracle::SemanticNode;
+use machtui::talon::{Cmd, Model, Program};
 use std::io;
 use std::time::Duration;
 
@@ -83,8 +83,18 @@ async fn main() -> io::Result<()> {
 
         let (r, g, b) = prog.model().bg_color;
         canvas.draw_text(2, 2, "--- MachTUI Async MVU ---", Some(Color::Yellow));
-        canvas.draw_text(2, 4, &format!("Status: {}", prog.model().status), Some(Color::Rgb { r, g, b }));
-        canvas.draw_text(2, 6, "Press 't' to trigger a 2-second background task", Some(Color::Cyan));
+        canvas.draw_text(
+            2,
+            4,
+            &format!("Status: {}", prog.model().status),
+            Some(Color::Rgb { r, g, b }),
+        );
+        canvas.draw_text(
+            2,
+            6,
+            "Press 't' to trigger a 2-second background task",
+            Some(Color::Cyan),
+        );
         canvas.draw_text(2, 8, "Press 'q' to exit", Some(Color::Grey));
 
         renderer.render()?;

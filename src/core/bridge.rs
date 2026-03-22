@@ -2,8 +2,8 @@
 //! Provides a high-level wrapper for remote command execution and state polling.
 
 use ssh2::Session;
-use std::net::TcpStream;
 use std::io::Read;
+use std::net::TcpStream;
 
 pub struct SshBridge {
     pub session: Session,
@@ -16,12 +16,13 @@ impl SshBridge {
         let mut sess = Session::new().map_err(|e| e.to_string())?;
         sess.set_tcp_stream(tcp);
         sess.handshake().map_err(|e| e.to_string())?;
-        sess.userauth_password(username, password).map_err(|e| e.to_string())?;
-        
+        sess.userauth_password(username, password)
+            .map_err(|e| e.to_string())?;
+
         if !sess.authenticated() {
             return Err("Authentication failed".into());
         }
-        
+
         Ok(Self { session: sess })
     }
 

@@ -1,13 +1,13 @@
 //! SysTop Demo: High-End Real-time System Monitor.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, ProgressBar, BoxComponent};
-use machtui::vision::colors::Palette;
-use sysinfo::System;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component, ProgressBar};
+use machtui::core::Renderer;
+use machtui::vision::colors::Palette;
 use std::io;
 use std::time::Duration;
+use sysinfo::System;
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -18,7 +18,9 @@ async fn main() -> io::Result<()> {
     loop {
         if let Some(event) = renderer.poll_event(Duration::from_millis(200))? {
             if let Event::Key(KeyEvent { code, .. }) = event {
-                if code == KeyCode::Char('q') { break; }
+                if code == KeyCode::Char('q') {
+                    break;
+                }
             }
         }
 
@@ -31,9 +33,12 @@ async fn main() -> io::Result<()> {
 
         // --- HEADER ---
         canvas.draw_gradient_text(2, 1, "MACHTUI SYSTEM MONITOR", (0, 255, 255), (0, 100, 255));
-        
+
         // --- CPU USAGE ---
-        let cpu_box = BoxComponent { title: " CPU CORES ".into(), border_color: Palette::BLUE_500 };
+        let cpu_box = BoxComponent {
+            title: " CPU CORES ".into(),
+            border_color: Palette::BLUE_500,
+        };
         cpu_box.render(canvas, 2, 3, 40, 12);
 
         for (i, cpu) in sys.cpus().iter().take(8).enumerate() {
@@ -48,17 +53,29 @@ async fn main() -> io::Result<()> {
         }
 
         // --- MEMORY ---
-        let mem_box = BoxComponent { title: " MEMORY ".into(), border_color: Palette::AMBER_500 };
+        let mem_box = BoxComponent {
+            title: " MEMORY ".into(),
+            border_color: Palette::AMBER_500,
+        };
         mem_box.render(canvas, 44, 3, 30, 6);
-        
+
         let total_mem = sys.total_memory() as f32;
         let used_mem = sys.used_memory() as f32;
-        let mem_usage = if total_mem > 0.0 { used_mem / total_mem } else { 0.0 };
-        
+        let mem_usage = if total_mem > 0.0 {
+            used_mem / total_mem
+        } else {
+            0.0
+        };
+
         let mem_bar = ProgressBar::new("RAM", mem_usage);
         mem_bar.render(canvas, 46, 5, 20, 1);
 
-        canvas.draw_text(2, 16, "Press 'q' to exit | Refreshing every 200ms", Some(Color::DarkGrey));
+        canvas.draw_text(
+            2,
+            16,
+            "Press 'q' to exit | Refreshing every 200ms",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

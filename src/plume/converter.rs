@@ -2,7 +2,6 @@
 //! Maps standard HTML tags and inline styles to LayoutNode and MTSS.
 
 use crate::plume::LayoutNode;
-use taffy::prelude::*;
 
 pub struct HtmlConverter;
 
@@ -10,11 +9,13 @@ impl HtmlConverter {
     /// Converts an HTML string into a MachTUI LayoutNode tree.
     pub fn convert(html: &str) -> Result<LayoutNode, String> {
         let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|e| e.to_string())?;
-        
+
         // Find the body tag or use the first child
-        let body_node = dom.nodes()
-            .iter()
-            .find(|n| n.as_tag().map(|t| t.name().as_utf8_str() == "body").unwrap_or(false));
+        let body_node = dom.nodes().iter().find(|n| {
+            n.as_tag()
+                .map(|t| t.name().as_utf8_str() == "body")
+                .unwrap_or(false)
+        });
 
         if let Some(node) = body_node {
             Self::convert_tl_node(node, &dom)
@@ -48,8 +49,8 @@ impl HtmlConverter {
                     for part in style_str.split(';') {
                         let kv: Vec<&str> = part.split(':').collect();
                         if kv.len() == 2 {
-                            let key = kv[0].trim();
-                            let val = kv[1].trim();
+                            let _key = kv[0].trim();
+                            let _val = kv[1].trim();
                             // In a real impl, we'd store these in the node's style
                             // For now, we'll rely on the Stylist to handle MTSS.
                         }

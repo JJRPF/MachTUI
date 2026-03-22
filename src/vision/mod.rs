@@ -1,23 +1,23 @@
 //! The "Vision" Layer
-//! 
+//!
 //! Provides advanced terminal graphics, including sub-pixel rendering using Braille characters.
 
-pub mod utils;
-pub mod images;
-pub mod sprites;
-pub mod colors;
-pub mod sound;
-pub mod charts;
-pub mod icons;
-pub mod vector;
 pub mod animations;
+pub mod charts;
+pub mod colors;
+pub mod icons;
+pub mod images;
 pub mod sixel;
+pub mod sound;
+pub mod sprites;
 pub mod themes;
+pub mod utils;
+pub mod vector;
 
 /// A canvas for drawing sub-pixels (2x4 per terminal cell).
 pub struct SubPixelCanvas {
-    pub width: u16,  // in actual terminal cells
-    pub height: u16, // in actual terminal cells
+    pub width: u16,    // in actual terminal cells
+    pub height: u16,   // in actual terminal cells
     pixels: Vec<bool>, // 2x4 subpixels per cell
 }
 
@@ -44,14 +44,20 @@ impl SubPixelCanvas {
         for cell_y in 0..self.height {
             for cell_x in 0..self.width {
                 let mut braille_char = 0x2800; // Base braille offset
-                // Braille dot matrix offsets:
-                // 1 4
-                // 2 5
-                // 3 6
-                // 7 8
+                                               // Braille dot matrix offsets:
+                                               // 1 4
+                                               // 2 5
+                                               // 3 6
+                                               // 7 8
                 let dot_offsets = [
-                    (0, 0, 0x1), (0, 1, 0x2), (0, 2, 0x4), (0, 3, 0x40),
-                    (1, 0, 0x8), (1, 1, 0x10), (1, 2, 0x20), (1, 3, 0x80)
+                    (0, 0, 0x1),
+                    (0, 1, 0x2),
+                    (0, 2, 0x4),
+                    (0, 3, 0x40),
+                    (1, 0, 0x8),
+                    (1, 1, 0x10),
+                    (1, 2, 0x20),
+                    (1, 3, 0x80),
                 ];
 
                 for (dx, dy, mask) in dot_offsets.iter() {

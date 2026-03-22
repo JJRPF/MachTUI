@@ -25,7 +25,8 @@ impl ShortcutManager {
     where
         F: Fn() + Send + Sync + 'static,
     {
-        self.shortcuts.insert(Shortcut { code, modifiers }, Box::new(action));
+        self.shortcuts
+            .insert(Shortcut { code, modifiers }, Box::new(action));
     }
 
     pub fn handle_event(&self, code: KeyCode, modifiers: KeyModifiers) -> bool {

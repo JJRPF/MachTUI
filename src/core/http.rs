@@ -1,7 +1,7 @@
 //! HTTP client integration for MachTUI.
 //! Provides high-level async data fetching utilities.
 
-use crate::talon::{Cmd};
+use crate::talon::Cmd;
 use serde::de::DeserializeOwned;
 
 pub struct HttpClient;
@@ -18,7 +18,7 @@ impl HttpClient {
         Box::pin(async move {
             let client = reqwest::Client::new();
             let res = client.get(url).send().await;
-            
+
             match res {
                 Ok(resp) => {
                     let json = resp.json::<T>().await;

@@ -1,7 +1,7 @@
 //! Modal and Dialog system for MachTUI.
 
+use crate::core::components::{BoxComponent, Component};
 use crate::core::Canvas;
-use crate::core::components::{Component, BoxComponent};
 use crossterm::style::Color;
 
 pub struct Modal {
@@ -20,7 +20,9 @@ impl Modal {
     }
 
     pub fn render_on_top(&self, canvas: &mut Canvas) {
-        if !self.visible { return; }
+        if !self.visible {
+            return;
+        }
 
         let mw = 40;
         let mh = 8;
@@ -35,14 +37,23 @@ impl Modal {
         }
 
         // Draw Modal Box (Layer 100)
-        let b = BoxComponent { title: self.title.clone(), border_color: Color::Cyan };
-        for x in mx..mx+mw {
-            for y in my..my+mh {
+        let b = BoxComponent {
+            title: self.title.clone(),
+            border_color: Color::Cyan,
+        };
+        for x in mx..mx + mw {
+            for y in my..my + mh {
                 canvas.set_cell_z(x, y, ' ', None, 100);
             }
         }
         b.render(canvas, mx, my, mw, mh);
         canvas.draw_text_z(mx + 2, my + 2, &self.message, Some(Color::White), 101);
-        canvas.draw_text_z(mx + 2, my + 6, "Press 'Esc' to close", Some(Color::DarkGrey), 101);
+        canvas.draw_text_z(
+            mx + 2,
+            my + 6,
+            "Press 'Esc' to close",
+            Some(Color::DarkGrey),
+            101,
+        );
     }
 }

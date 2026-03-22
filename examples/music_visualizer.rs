@@ -1,10 +1,10 @@
 //! Music Visualizer Demo: Synchronized Audio and Braille Graphics.
 
-use machtui::core::Renderer;
-use machtui::vision::SubPixelCanvas;
-use machtui::vision::sound::SoundEngine;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::Renderer;
+use machtui::vision::sound::SoundEngine;
+use machtui::vision::SubPixelCanvas;
 use std::io;
 use std::time::{Duration, Instant};
 
@@ -17,9 +17,13 @@ async fn main() -> io::Result<()> {
     loop {
         if let Some(event) = renderer.poll_event(Duration::from_millis(10))? {
             if let Event::Key(KeyEvent { code, .. }) = event {
-                if code == KeyCode::Char('q') { break; }
+                if code == KeyCode::Char('q') {
+                    break;
+                }
                 if code == KeyCode::Char('p') {
-                    if let Some(ref s) = sound { s.play_tone(440.0); }
+                    if let Some(ref s) = sound {
+                        s.play_tone(440.0);
+                    }
                 }
             }
         }
@@ -28,14 +32,14 @@ async fn main() -> io::Result<()> {
         canvas.clear();
 
         let t = start_time.elapsed().as_secs_f32();
-        
+
         // --- DRAW VISUALIZER BARS ---
         let mut subpixels = SubPixelCanvas::new(canvas.width, canvas.height);
         for x in 0..(canvas.width * 2) {
             // Simulated frequency data
-            let h = (t * 2.0 + (x as f32 * 0.2)).sin().abs() * 20.0 + 
-                    (t * 5.0 + (x as f32 * 0.5)).cos().abs() * 10.0;
-            
+            let h = (t * 2.0 + (x as f32 * 0.2)).sin().abs() * 20.0
+                + (t * 5.0 + (x as f32 * 0.5)).cos().abs() * 10.0;
+
             for y in 0..(h as u16) {
                 if y < canvas.height * 4 {
                     subpixels.set_pixel(x, (canvas.height * 4) - 1 - y, true);
@@ -55,8 +59,19 @@ async fn main() -> io::Result<()> {
             }
         }
 
-        canvas.draw_gradient_text(2, 1, "MACHTUI AUDIO VISUALIZER", (255, 0, 255), (0, 255, 255));
-        canvas.draw_text(2, 3, "Press 'p' to play test tone | 'q' to exit", Some(Color::White));
+        canvas.draw_gradient_text(
+            2,
+            1,
+            "MACHTUI AUDIO VISUALIZER",
+            (255, 0, 255),
+            (0, 255, 255),
+        );
+        canvas.draw_text(
+            2,
+            3,
+            "Press 'p' to play test tone | 'q' to exit",
+            Some(Color::White),
+        );
 
         renderer.render()?;
     }

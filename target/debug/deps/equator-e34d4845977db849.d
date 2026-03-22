@@ -1,0 +1,12 @@
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/equator-e34d4845977db849.d: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/decompose.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/by_val.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/debug.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/sized.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/structures.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/traits.rs
+
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/libequator-e34d4845977db849.rmeta: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/decompose.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/by_val.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/debug.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/sized.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/structures.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/traits.rs
+
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/lib.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/decompose.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/by_val.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/debug.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/spec/sized.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/structures.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.4.2/src/traits.rs:

@@ -1,0 +1,10 @@
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/crc32fast-7545a73aed86b75f.d: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/baseline.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/combine.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/table.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/aarch64.rs
+
+/Users/JJR/Code/MachTui/MachTUI/target/debug/deps/libcrc32fast-7545a73aed86b75f.rmeta: /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/lib.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/baseline.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/combine.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/mod.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/table.rs /Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/aarch64.rs
+
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/lib.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/baseline.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/combine.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/mod.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/table.rs:
+/Users/JJR/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/crc32fast-1.5.0/src/specialized/aarch64.rs:

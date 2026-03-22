@@ -2,12 +2,12 @@
 //!
 //! Strict Model-View-Update (MVU) architecture with Async Command support.
 
-pub mod vdom;
 pub mod sync;
+pub mod vdom;
 
-use std::fmt::Debug;
 use crate::oracle::SemanticNode;
 use futures::future::BoxFuture;
+use std::fmt::Debug;
 
 /// A Command represents an asynchronous side-effect that eventually produces a message.
 pub type Cmd<M> = BoxFuture<'static, Option<M>>;
@@ -37,7 +37,7 @@ pub struct Program<M: Model> {
 impl<M: Model> Program<M> {
     pub fn new(initial_model: M) -> Self {
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-        Self { 
+        Self {
             model: initial_model,
             msg_tx: tx,
             msg_rx: rx,

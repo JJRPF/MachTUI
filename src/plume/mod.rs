@@ -3,20 +3,20 @@
 //! A CSS-like parser and layout engine for .mtss (MachTUI Style Sheets).
 //! Powered by Taffy for high-performance Flexbox/Grid layout.
 
-pub mod lexer;
-pub mod layout;
 pub mod converter;
 pub mod inspector;
+pub mod layout;
+pub mod lexer;
 
-use std::collections::HashMap;
-use lexer::{Lexer, Token};
 use layout::*;
+use lexer::{Lexer, Token};
+use std::collections::HashMap;
 use taffy::prelude::*;
 
 /// A MachTUI Style Sheet (MTSS) rule.
 #[derive(Debug, Clone, Default)]
 pub struct StyleRule {
-    pub selector: String, // e.g., "button", ".primary", "#header"
+    pub selector: String,             // e.g., "button", ".primary", "#header"
     pub pseudo_class: Option<String>, // e.g., "hover", "active"
     pub properties: HashMap<String, String>,
 }
@@ -66,7 +66,7 @@ pub struct Stylist {
 
 impl Stylist {
     pub fn new() -> Self {
-        Self { 
+        Self {
             rules: Vec::new(),
             variables: HashMap::new(),
             taffy: TaffyTree::new(),
@@ -81,7 +81,7 @@ impl Stylist {
         while i < tokens.len() {
             let mut selector = String::new();
             let mut pseudo_class = None;
-            
+
             while i < tokens.len() && tokens[i] != Token::OpenBrace {
                 match &tokens[i] {
                     Token::Ident(s) => selector.push_str(s),
@@ -106,9 +106,12 @@ impl Stylist {
                         i += 1;
                         if i < tokens.len() && tokens[i] == Token::Colon {
                             i += 1;
-                            
+
                             let mut value = String::new();
-                            while i < tokens.len() && tokens[i] != Token::Semicolon && tokens[i] != Token::CloseBrace {
+                            while i < tokens.len()
+                                && tokens[i] != Token::Semicolon
+                                && tokens[i] != Token::CloseBrace
+                            {
                                 match &tokens[i] {
                                     Token::Ident(s) => value.push_str(s),
                                     Token::OpenParen => value.push('('),
@@ -133,7 +136,11 @@ impl Stylist {
                     }
                 }
                 if !selector.is_empty() {
-                    self.rules.push(StyleRule { selector, pseudo_class, properties });
+                    self.rules.push(StyleRule {
+                        selector,
+                        pseudo_class,
+                        properties,
+                    });
                 }
             }
             i += 1;
@@ -142,14 +149,15 @@ impl Stylist {
 
     pub fn get_property(&self, node: &LayoutNode, key: &str) -> Option<String> {
         let raw_val = if node.is_hovered {
-            self.find_rule(node, Some("hover"), key).or_else(|| self.find_rule(node, None, key))
+            self.find_rule(node, Some("hover"), key)
+                .or_else(|| self.find_rule(node, None, key))
         } else {
             self.find_rule(node, None, key)
         }?;
 
         // Resolve variables: var(--name)
         if raw_val.starts_with("var(") && raw_val.ends_with(")") {
-            let var_name = &raw_val[4..raw_val.len()-1];
+            let var_name = &raw_val[4..raw_val.len() - 1];
             self.variables.get(var_name).cloned()
         } else {
             Some(raw_val.clone())
@@ -159,30 +167,37 @@ impl Stylist {
     fn find_rule(&self, node: &LayoutNode, pseudo: Option<&str>, key: &str) -> Option<&String> {
         if let Some(id) = &node.id {
             let id_sel = format!("#{}", id);
-            if let Some(prop) = self.rules.iter()
+            if let Some(prop) = self
+                .rules
+                .iter()
                 .find(|r| r.selector == id_sel && r.pseudo_class.as_deref() == pseudo)
-                .and_then(|r| r.properties.get(key)) {
+                .and_then(|r| r.properties.get(key))
+            {
                 return Some(prop);
             }
         }
 
         for class in &node.classes {
             let class_sel = format!(".{}", class);
-            if let Some(prop) = self.rules.iter()
+            if let Some(prop) = self
+                .rules
+                .iter()
                 .find(|r| r.selector == class_sel && r.pseudo_class.as_deref() == pseudo)
-                .and_then(|r| r.properties.get(key)) {
+                .and_then(|r| r.properties.get(key))
+            {
                 return Some(prop);
             }
         }
 
-        self.rules.iter()
+        self.rules
+            .iter()
             .find(|r| r.selector == node.tag && r.pseudo_class.as_deref() == pseudo)
             .and_then(|r| r.properties.get(key))
     }
 
     fn build_taffy_tree(&mut self, node: &LayoutNode) -> NodeId {
         let mut style = node.style.clone();
-        
+
         if let Some(jc) = self.get_property(node, "justify-content") {
             style.justify_content = Some(map_justify_content(&jc));
         }
@@ -197,16 +212,23 @@ impl Stylist {
         for child in &node.children {
             taffy_children.push(self.build_taffy_tree(child));
         }
-        self.taffy.new_with_children(style, &taffy_children).unwrap()
+        self.taffy
+            .new_with_children(style, &taffy_children)
+            .unwrap()
     }
 
     pub fn compute_layout(&mut self, root: &mut LayoutNode, width: f32, height: f32) {
         self.taffy.clear();
         let root_id = self.build_taffy_tree(root);
-        self.taffy.compute_layout(root_id, Size {
-            width: AvailableSpace::Definite(width),
-            height: AvailableSpace::Definite(height),
-        }).unwrap();
+        self.taffy
+            .compute_layout(
+                root_id,
+                Size {
+                    width: AvailableSpace::Definite(width),
+                    height: AvailableSpace::Definite(height),
+                },
+            )
+            .unwrap();
         self.apply_taffy_layout(root, root_id);
     }
 
@@ -228,18 +250,27 @@ mod tests {
         let mut stylist = Stylist::new();
         stylist.parse_mtss(":root { --main-bg: blue; } button { color: var(--main-bg); }");
         let btn = LayoutNode::new("button");
-        assert_eq!(stylist.get_property(&btn, "color"), Some("blue".to_string()));
+        assert_eq!(
+            stylist.get_property(&btn, "color"),
+            Some("blue".to_string())
+        );
     }
 
     #[test]
     fn test_pseudo_classes() {
         let mut stylist = Stylist::new();
         stylist.parse_mtss("button { color: white; } button:hover { color: yellow; }");
-        
+
         let mut btn = LayoutNode::new("button");
-        assert_eq!(stylist.get_property(&btn, "color"), Some("white".to_string()));
-        
+        assert_eq!(
+            stylist.get_property(&btn, "color"),
+            Some("white".to_string())
+        );
+
         btn.is_hovered = true;
-        assert_eq!(stylist.get_property(&btn, "color"), Some("yellow".to_string()));
+        assert_eq!(
+            stylist.get_property(&btn, "color"),
+            Some("yellow".to_string())
+        );
     }
 }

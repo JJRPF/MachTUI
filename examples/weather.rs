@@ -1,12 +1,12 @@
 //! Weather Station Demo: Real-time API integration.
 
-use machtui::core::Renderer;
-use machtui::core::components::{Component, BoxComponent};
-use machtui::core::http::HttpClient;
-use machtui::talon::{Model, Program, Cmd};
-use machtui::vision::icons::Icons;
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::style::Color;
+use machtui::core::components::{BoxComponent, Component};
+use machtui::core::http::HttpClient;
+use machtui::core::Renderer;
+use machtui::talon::{Cmd, Model, Program};
+use machtui::vision::icons::Icons;
 use serde::Deserialize;
 use std::io;
 use std::time::Duration;
@@ -51,26 +51,28 @@ impl Model for App {
                 self.status = "Refreshing...".into();
                 return Some(HttpClient::fetch_json(
                     "https://api.weatherapi.com/v1/current.json?key=7f878b3&q=London",
-                    Msg::WeatherResult
+                    Msg::WeatherResult,
                 ));
             }
-            Msg::WeatherResult(res) => {
-                match res {
-                    Ok(data) => {
-                        self.temp = format!("{:.1}°C", data.current.temp_c);
-                        self.condition = data.current.condition.text;
-                        self.status = "Success".into();
-                    }
-                    Err(e) => self.status = format!("Error: {}", e),
+            Msg::WeatherResult(res) => match res {
+                Ok(data) => {
+                    self.temp = format!("{:.1}°C", data.current.temp_c);
+                    self.condition = data.current.condition.text;
+                    self.status = "Success".into();
                 }
-            }
+                Err(e) => self.status = format!("Error: {}", e),
+            },
             Msg::Exit => self.running = false,
         }
         None
     }
 
-    fn view(&self) -> String { self.temp.clone() }
-    fn semantic_view(&self) -> machtui::oracle::SemanticNode { machtui::oracle::SemanticNode::new("weather_app") }
+    fn view(&self) -> String {
+        self.temp.clone()
+    }
+    fn semantic_view(&self) -> machtui::oracle::SemanticNode {
+        machtui::oracle::SemanticNode::new("weather_app")
+    }
 }
 
 #[tokio::main]
@@ -104,11 +106,31 @@ async fn main() -> io::Result<()> {
         let b = BoxComponent::new(&format!("{} WEATHER STATION ", Icons::GEAR));
         b.render(canvas, 4, 3, 40, 10);
 
-        canvas.draw_text(6, 5, &format!("Temp: {}", prog.model().temp), Some(Color::Cyan));
-        canvas.draw_text(6, 7, &format!("Cond: {}", prog.model().condition), Some(Color::Yellow));
-        canvas.draw_text(6, 9, &format!("Stat: {}", prog.model().status), Some(Color::Grey));
+        canvas.draw_text(
+            6,
+            5,
+            &format!("Temp: {}", prog.model().temp),
+            Some(Color::Cyan),
+        );
+        canvas.draw_text(
+            6,
+            7,
+            &format!("Cond: {}", prog.model().condition),
+            Some(Color::Yellow),
+        );
+        canvas.draw_text(
+            6,
+            9,
+            &format!("Stat: {}", prog.model().status),
+            Some(Color::Grey),
+        );
 
-        canvas.draw_text(4, 14, "Press 'r' to Refresh | 'q' to Exit", Some(Color::DarkGrey));
+        canvas.draw_text(
+            4,
+            14,
+            "Press 'r' to Refresh | 'q' to Exit",
+            Some(Color::DarkGrey),
+        );
 
         renderer.render()?;
     }

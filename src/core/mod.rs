@@ -3,28 +3,29 @@
 //! Immediate-mode renderer internally, exposed via a Reactive Component layer.
 //! Supports Mouse events, RGB Gradients, Double-Buffered diffing, and Z-Index Layering.
 
-pub mod components;
 pub mod animation;
-pub mod widgets;
-pub mod keys;
-pub mod notifications;
-pub mod testing;
-pub mod http;
-pub mod db;
-pub mod shell;
 pub mod bridge;
-pub mod modals;
-pub mod events;
-pub mod plugins;
 pub mod cloud;
+pub mod components;
+pub mod db;
+pub mod events;
+pub mod http;
+pub mod keys;
 pub mod macros;
+pub mod blueprints;
+pub mod modals;
+pub mod notifications;
+pub mod plugins;
+pub mod shell;
+pub mod testing;
+pub mod widgets;
 
 use crossterm::{
     cursor,
-    event::{self, Event, EnableMouseCapture, DisableMouseCapture},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
+    style::{self, Color, Colors, ContentStyle},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-    style::{self, Color, ContentStyle, Colors},
     QueueableCommand,
 };
 use std::io::{self, Stdout, Write};
@@ -92,7 +93,15 @@ impl Canvas {
         self.draw_text_z(x, y, text, color, 0);
     }
 
-    pub fn draw_gradient_text_z(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8), z: i32) {
+    pub fn draw_gradient_text_z(
+        &mut self,
+        x: u16,
+        y: u16,
+        text: &str,
+        start_rgb: (u8, u8, u8),
+        end_rgb: (u8, u8, u8),
+        z: i32,
+    ) {
         let len = text.chars().count();
         for (i, c) in text.chars().enumerate() {
             let t = i as f32 / (len.max(1) as f32);
@@ -103,7 +112,14 @@ impl Canvas {
         }
     }
 
-    pub fn draw_gradient_text(&mut self, x: u16, y: u16, text: &str, start_rgb: (u8, u8, u8), end_rgb: (u8, u8, u8)) {
+    pub fn draw_gradient_text(
+        &mut self,
+        x: u16,
+        y: u16,
+        text: &str,
+        start_rgb: (u8, u8, u8),
+        end_rgb: (u8, u8, u8),
+    ) {
         self.draw_gradient_text_z(x, y, text, start_rgb, end_rgb, 0);
     }
 
@@ -144,7 +160,12 @@ impl Renderer {
         let (width, height) = terminal::size()?;
         let mut stdout = io::stdout();
         terminal::enable_raw_mode()?;
-        execute!(stdout, EnterAlternateScreen, cursor::Hide, EnableMouseCapture)?;
+        execute!(
+            stdout,
+            EnterAlternateScreen,
+            cursor::Hide,
+            EnableMouseCapture
+        )?;
         Ok(Self {
             stdout,
             current_canvas: Canvas::new(width, height),
@@ -157,7 +178,12 @@ impl Renderer {
 
     pub fn shutdown(&mut self) -> io::Result<()> {
         terminal::disable_raw_mode()?;
-        execute!(self.stdout, LeaveAlternateScreen, cursor::Show, DisableMouseCapture)?;
+        execute!(
+            self.stdout,
+            LeaveAlternateScreen,
+            cursor::Show,
+            DisableMouseCapture
+        )?;
         Ok(())
     }
 
@@ -182,7 +208,13 @@ impl Renderer {
 
         if self.show_fps {
             let fps_str = format!(" FPS: {:.1} ", fps);
-            self.current_canvas.draw_text_z(self.current_canvas.width - fps_str.len() as u16 - 1, 0, &fps_str, Some(Color::DarkGrey), 100);
+            self.current_canvas.draw_text_z(
+                self.current_canvas.width - fps_str.len() as u16 - 1,
+                0,
+                &fps_str,
+                Some(Color::DarkGrey),
+                100,
+            );
         }
 
         self.begin_sync()?;
@@ -192,18 +224,20 @@ impl Renderer {
                 if self.current_canvas.cells[idx] != self.last_canvas.cells[idx] {
                     let cell = &self.current_canvas.cells[idx];
                     self.stdout.queue(cursor::MoveTo(x, y))?;
-                    
+
                     let fg = cell.style.foreground_color.unwrap_or(Color::Reset);
                     let bg = cell.style.background_color.unwrap_or(Color::Reset);
                     self.stdout.queue(style::SetColors(Colors::new(fg, bg)))?;
-                    
+
                     self.stdout.queue(style::Print(cell.content))?;
                 }
             }
         }
         self.end_sync()?;
         self.stdout.flush()?;
-        self.last_canvas.cells.clone_from(&self.current_canvas.cells);
+        self.last_canvas
+            .cells
+            .clone_from(&self.current_canvas.cells);
         Ok(())
     }
 

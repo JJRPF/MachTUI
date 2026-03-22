@@ -1,9 +1,9 @@
 //! Advanced widgets for MachTUI.
 
-use crate::core::Canvas;
 use crate::core::components::Component;
-use crossterm::style::Color;
+use crate::core::Canvas;
 use crate::oracle::{OracleProvider, SemanticNode};
+use crossterm::style::Color;
 
 /// A single-line text input component.
 pub struct TextInput {
@@ -38,8 +38,12 @@ impl TextInput {
 
 impl Component for TextInput {
     fn render(&self, canvas: &mut Canvas, x: u16, y: u16, width: u16, _height: u16) {
-        let border_color = if self.focused { Color::Cyan } else { Color::DarkGrey };
-        
+        let border_color = if self.focused {
+            Color::Cyan
+        } else {
+            Color::DarkGrey
+        };
+
         // Draw input box
         canvas.draw_text(x, y, &"━".repeat(width as usize), Some(border_color));
         canvas.draw_text(x, y + 2, &"━".repeat(width as usize), Some(border_color));
@@ -53,7 +57,12 @@ impl Component for TextInput {
         }
 
         if self.focused {
-            canvas.set_cell(x + 1 + self.cursor_pos as u16, y + 1, '█', Some(Color::White));
+            canvas.set_cell(
+                x + 1 + self.cursor_pos as u16,
+                y + 1,
+                '█',
+                Some(Color::White),
+            );
         }
     }
 }
@@ -75,15 +84,22 @@ pub struct ListSelection {
 
 impl ListSelection {
     pub fn new(items: Vec<String>) -> Self {
-        Self { items, selected_idx: 0 }
+        Self {
+            items,
+            selected_idx: 0,
+        }
     }
 
     pub fn move_up(&mut self) {
-        if self.selected_idx > 0 { self.selected_idx -= 1; }
+        if self.selected_idx > 0 {
+            self.selected_idx -= 1;
+        }
     }
 
     pub fn move_down(&mut self) {
-        if self.selected_idx < self.items.len() - 1 { self.selected_idx += 1; }
+        if self.selected_idx < self.items.len() - 1 {
+            self.selected_idx += 1;
+        }
     }
 }
 
@@ -93,7 +109,12 @@ impl Component for ListSelection {
             let is_sel = i == self.selected_idx;
             let prefix = if is_sel { "> " } else { "  " };
             let color = if is_sel { Color::Green } else { Color::White };
-            canvas.draw_text(x, y + i as u16, &format!("{}{}", prefix, self.items[i]), Some(color));
+            canvas.draw_text(
+                x,
+                y + i as u16,
+                &format!("{}{}", prefix, self.items[i]),
+                Some(color),
+            );
         }
     }
 }
@@ -103,9 +124,11 @@ impl OracleProvider for ListSelection {
         let mut root = SemanticNode::new("list");
         root = root.with_metadata("selected_idx", &self.selected_idx.to_string());
         for (i, item) in self.items.iter().enumerate() {
-            root.add_child(SemanticNode::new("list_item")
-                .with_content(item)
-                .with_metadata("index", &i.to_string()));
+            root.add_child(
+                SemanticNode::new("list_item")
+                    .with_content(item)
+                    .with_metadata("index", &i.to_string()),
+            );
         }
         root
     }
@@ -119,7 +142,10 @@ pub struct Tabs {
 
 impl Tabs {
     pub fn new(titles: Vec<String>) -> Self {
-        Self { titles, selected_idx: 0 }
+        Self {
+            titles,
+            selected_idx: 0,
+        }
     }
 
     pub fn next(&mut self) {
@@ -141,8 +167,12 @@ impl Component for Tabs {
         for (i, title) in self.titles.iter().enumerate() {
             let is_sel = i == self.selected_idx;
             let color = if is_sel { Color::Cyan } else { Color::Grey };
-            let text = if is_sel { format!("[ {} ]", title) } else { format!("  {}  ", title) };
-            
+            let text = if is_sel {
+                format!("[ {} ]", title)
+            } else {
+                format!("  {}  ", title)
+            };
+
             canvas.draw_text(current_x, y, &text, Some(color));
             current_x += text.len() as u16 + 1;
         }
@@ -170,11 +200,15 @@ impl Checklist {
     }
 
     pub fn move_up(&mut self) {
-        if self.selected_idx > 0 { self.selected_idx -= 1; }
+        if self.selected_idx > 0 {
+            self.selected_idx -= 1;
+        }
     }
 
     pub fn move_down(&mut self) {
-        if self.selected_idx < self.items.len() - 1 { self.selected_idx += 1; }
+        if self.selected_idx < self.items.len() - 1 {
+            self.selected_idx += 1;
+        }
     }
 }
 
@@ -183,12 +217,17 @@ impl Component for Checklist {
         for i in 0..(height as usize).min(self.items.len()) {
             let (title, checked) = &self.items[i];
             let is_sel = i == self.selected_idx;
-            
+
             let prefix = if is_sel { "> " } else { "  " };
             let mark = if *checked { "[X] " } else { "[ ] " };
             let color = if is_sel { Color::Yellow } else { Color::White };
-            
-            canvas.draw_text(x, y + i as u16, &format!("{}{}{}", prefix, mark, title), Some(color));
+
+            canvas.draw_text(
+                x,
+                y + i as u16,
+                &format!("{}{}{}", prefix, mark, title),
+                Some(color),
+            );
         }
     }
 }
@@ -197,10 +236,12 @@ impl OracleProvider for Checklist {
     fn to_semantic(&self) -> SemanticNode {
         let mut root = SemanticNode::new("checklist");
         for (i, (title, checked)) in self.items.iter().enumerate() {
-            root.add_child(SemanticNode::new("check_item")
-                .with_content(title)
-                .with_metadata("checked", &checked.to_string())
-                .with_metadata("index", &i.to_string()));
+            root.add_child(
+                SemanticNode::new("check_item")
+                    .with_content(title)
+                    .with_metadata("checked", &checked.to_string())
+                    .with_metadata("index", &i.to_string()),
+            );
         }
         root
     }
