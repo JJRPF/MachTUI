@@ -148,3 +148,60 @@ impl Component for Tabs {
         }
     }
 }
+
+/// Checklist widget for MachTUI.
+pub struct Checklist {
+    pub items: Vec<(String, bool)>,
+    pub selected_idx: usize,
+}
+
+impl Checklist {
+    pub fn new(items: Vec<String>) -> Self {
+        Self {
+            items: items.into_iter().map(|s| (s, false)).collect(),
+            selected_idx: 0,
+        }
+    }
+
+    pub fn toggle(&mut self) {
+        if let Some(item) = self.items.get_mut(self.selected_idx) {
+            item.1 = !item.1;
+        }
+    }
+
+    pub fn move_up(&mut self) {
+        if self.selected_idx > 0 { self.selected_idx -= 1; }
+    }
+
+    pub fn move_down(&mut self) {
+        if self.selected_idx < self.items.len() - 1 { self.selected_idx += 1; }
+    }
+}
+
+impl Component for Checklist {
+    fn render(&self, canvas: &mut Canvas, x: u16, y: u16, _width: u16, height: u16) {
+        for i in 0..(height as usize).min(self.items.len()) {
+            let (title, checked) = &self.items[i];
+            let is_sel = i == self.selected_idx;
+            
+            let prefix = if is_sel { "> " } else { "  " };
+            let mark = if *checked { "[X] " } else { "[ ] " };
+            let color = if is_sel { Color::Yellow } else { Color::White };
+            
+            canvas.draw_text(x, y + i as u16, &format!("{}{}{}", prefix, mark, title), Some(color));
+        }
+    }
+}
+
+impl OracleProvider for Checklist {
+    fn to_semantic(&self) -> SemanticNode {
+        let mut root = SemanticNode::new("checklist");
+        for (i, (title, checked)) in self.items.iter().enumerate() {
+            root.add_child(SemanticNode::new("check_item")
+                .with_content(title)
+                .with_metadata("checked", &checked.to_string())
+                .with_metadata("index", &i.to_string()));
+        }
+        root
+    }
+}
