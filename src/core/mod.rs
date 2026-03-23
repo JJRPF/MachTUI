@@ -14,6 +14,7 @@ pub mod keys;
 pub mod macros;
 pub mod blueprints;
 pub mod modals;
+pub mod drag;
 pub mod notifications;
 pub mod plugins;
 pub mod shell;
